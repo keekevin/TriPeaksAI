@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.Controller.GameController;
+import org.example.View.MenuView;
 
 import javax.swing.*;
 
@@ -23,7 +24,21 @@ public class MainGUI {
 
         // 🔹 Avvio GUI su Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
-            new GameController(solverPath, ModalitaGioco.UMANO);
+
+            // 1️⃣ Menu (modale)
+            JFrame frame = new JFrame();
+            MenuView menu = new MenuView(frame);
+            menu.setVisible(true);   // BLOCCA finché non scegli
+
+            ModalitaGioco modalita = menu.getScelta();
+            frame.dispose();
+
+            if (modalita == null) {
+                System.exit(0);
+            }
+
+            // 2️⃣ Avvio gioco con modalità scelta
+            new GameController(solverPath, modalita);
         });
     }
 }

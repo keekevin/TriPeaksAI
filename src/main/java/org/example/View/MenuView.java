@@ -1,5 +1,7 @@
 package org.example.View;
 
+import org.example.ModalitaGioco;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,6 +9,7 @@ public class MenuView extends JDialog {
 
     private JButton umanoButton;
     private JButton iaButton;
+    private ModalitaGioco scelta;
 
 
     public MenuView(JFrame parent) {
@@ -20,6 +23,17 @@ public class MenuView extends JDialog {
 
         umanoButton = new JButton("Gioco io");
         iaButton = new JButton("Gioca l'IA");
+
+        umanoButton.addActionListener(e ->{
+            scelta = ModalitaGioco.UMANO;
+            dispose();
+        });
+
+        iaButton.addActionListener(e ->{
+            scelta = ModalitaGioco.IA;
+            dispose();
+        });
+
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(umanoButton);
@@ -37,5 +51,7 @@ public class MenuView extends JDialog {
         return iaButton;
     }
 
-
+    public ModalitaGioco getScelta() {
+        return scelta;
+    }
 }
