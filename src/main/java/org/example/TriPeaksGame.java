@@ -399,5 +399,26 @@ public class TriPeaksGame {
     }
 
 
+    public boolean isVinta() {
+        return haVinto();
+    }
 
+    public boolean isPersa() {
+        return getMosseValide().isEmpty() && mazzoVuoto();
+    }
+
+    public boolean mazzoVuoto() {
+        return mazzo.isEmpty();
+    }
+
+    public boolean isFinita() {
+        return isVinta() || isPersa();
+    }
+
+    public boolean puoPescare() {
+        return !mazzo.isEmpty();
+    }
+    public boolean pescaObbligata() {
+        return getMosseValide().isEmpty() && puoPescare();
+    }
 }

@@ -12,6 +12,9 @@ public class GameController implements GameActions{
     private TriPeaksGame game;
     private TriPeaksGUI view;
     private final String solverPath;
+    private GameActionsIA ia;
+    private boolean iaStaGiocando = false;
+
 
     public GameController(String solverPath, ModalitaGioco modalita){
         this.modalita = modalita;
@@ -54,6 +57,7 @@ public class GameController implements GameActions{
 
         view.updateDisplay(game);
         System.out.println("=== FINE TENTATIVO ===\n");
+
     }
 
     @Override
@@ -76,15 +80,32 @@ public class GameController implements GameActions{
             game.inizia();
             view.updateDisplay(game);
             System.out.println("✓ Partita inizializzata");
+            if (modalita == ModalitaGioco.IA) {
+                ia = new GameActionsIA(this, game);
+                turnoIAseNecessario(); // 👈 SOLO QUI
+            }
+
+            turnoIAseNecessario();
         } catch (Exception e) {
             System.err.println("✗ Errore nell'inizializzazione:");
             e.printStackTrace();
         }
     }
     private void turnoIAseNecessario() {
-        // qui domani metti EMBASP IA
-    }
+        if (modalita == ModalitaGioco.IA && ia != null && !iaStaGiocando) {
+            iaStaGiocando = true;
 
+            new Thread(() -> {
+                try {
+                    while (!game.isFinita()) {
+                        Thread.sleep(600);
+                        ia.faiMossa();
+                    }
+                } catch (InterruptedException ignored) {}
+                iaStaGiocando = false;
+            }).start();
+        }
+    }
 
 
 }
