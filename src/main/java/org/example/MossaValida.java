@@ -30,6 +30,11 @@ public class MossaValida {
         this.valoreCarta = valoreCarta;
     }
 
+    public MossaValida(int idCarta) {
+        this.idCarta = idCarta;
+    }
+
+
     @Override
     public String toString() {
         return "MossaValida{" +

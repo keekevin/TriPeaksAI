@@ -28,6 +28,8 @@ public class TriPeaksGame {
             DLV2DesktopService service = new DLV2DesktopService(solverPath);
             this.handler = new DesktopHandler(service);
 
+            ASPMapper.getInstance().registerClass(AzioneGioca.class);
+            ASPMapper.getInstance().registerClass(AzionePesca.class);
             ASPMapper.getInstance().registerClass(Carta.class);
             ASPMapper.getInstance().registerClass(Posizione.class);
             ASPMapper.getInstance().registerClass(MossaValida.class);
@@ -153,11 +155,60 @@ public class TriPeaksGame {
             // Una posizione è coperta se QUALCUN ALTRO la copre
             // Dobbiamo controllare se questa posizione appare nella lista di qualcun altro
             boolean estaCoperta = coperture.containsKey(i);
-            pos.setCoperta(estaCoperta);
+            pos.setCoperta(estaCoperta ? 1 : 0);
 
             posizioni.add(pos);
         }
     }
+
+    public Object decidiAzioneASP() {
+        try {
+            handler.removeAll();
+            InputProgram program = new ASPInputProgram();
+
+            // Stato del layout
+            for (Carta carta : layout) {
+                program.addObjectInput(carta);
+            }
+
+            for (Posizione pos : posizioni) {
+                program.addObjectInput(pos);
+            }
+
+            // Carta scarto
+            program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
+
+            // Posso pescare?
+            if (!mazzo.isEmpty()) {
+                program.addProgram("puo_pescare.");
+            }
+
+            // Regole ASP
+            program.addFilesPath("programs/tripeaks.asp");
+
+            handler.addProgram(program);
+
+            Output output = handler.startSync();
+            AnswerSets answers = (AnswerSets) output;
+
+            if (answers.getAnswersets().isEmpty()) {
+                return null;
+            }
+
+            AnswerSet as = answers.getAnswersets().get(0);
+
+            for (Object atom : as.getAtoms()) {
+                if (atom instanceof AzioneGioca) return atom;
+                if (atom instanceof AzionePesca) return atom;
+            }
+
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     public List<MossaValida> getMosseValide(){
         System.out.println("\n╔═══════════════════════════════════════╗");
@@ -207,6 +258,9 @@ public class TriPeaksGame {
             handler.addProgram(program);
 
             System.out.println("\n🔧 Esecuzione solver...");
+            if (!mazzo.isEmpty()) {
+                program.addProgram("puo_pescare.");
+            }
             Output output = handler.startSync();
             AnswerSets answers = (AnswerSets) output;
 
@@ -279,7 +333,7 @@ public class TriPeaksGame {
 
         int pos = cartaDaGiocare.getPosizione();
         Posizione posizione = posizioni.get(pos);
-        posizione.setCoperta(false);
+        posizione.setCoperta(0);
 
         scopriCarteSotto(pos);
 
@@ -324,7 +378,7 @@ public class TriPeaksGame {
 
             // Se non è più coperta → scoprila
             if (!ancoraCoperta) {
-                posizioni.get(cartaCoperta).setCoperta(false);
+                posizioni.get(cartaCoperta).setCoperta(0);
             }
         }
     }
@@ -421,4 +475,18 @@ public class TriPeaksGame {
     public boolean pescaObbligata() {
         return getMosseValide().isEmpty() && puoPescare();
     }
+
+    public void giocaCartaById(int idCarta) {
+        for (Carta c : layout) {
+            if (c.getId() == idCarta) {
+                MossaValida m = new MossaValida();
+                m.setIdCarta(idCarta);
+                m.setValoreCarta(c.getValore());
+                giocaMossa(m);
+                return;
+            }
+        }
+        throw new IllegalStateException("Carta non trovata: " + idCarta);
+    }
+
 }

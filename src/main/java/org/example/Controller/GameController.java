@@ -26,39 +26,47 @@ public class GameController implements GameActions{
 
     }
 
-    @Override
-    public void giocaCarta(int idCarta) {
-        System.out.println("=== TENTATIVO DI GIOCARE CARTA ID: " + idCarta + " ===");
+//    @Override
+//    public void giocaCarta(int idCarta) {
+//        System.out.println("=== TENTATIVO DI GIOCARE CARTA ID: " + idCarta + " ===");
+//
+//        List<MossaValida> mosse = game.getMosseValide();
+//        System.out.println("Mosse valide trovate: " + mosse.size());
+//
+//        for (MossaValida m : mosse) {
+//            System.out.println("  - Mossa valida: ID=" + m.getIdCarta() + ", Valore=" + m.getValoreCarta());
+//        }
+//
+//        boolean mossaTrovata = false;
+//        for (MossaValida m : mosse) {
+//            if (m.getIdCarta() == idCarta) {
+//                System.out.println("✓ Mossa trovata! Eseguo...");
+//                game.giocaMossa(m);
+//                mossaTrovata = true;
+//                break;
+//            }
+//        }
+//
+//        if (!mossaTrovata) {
+//            System.err.println("✗ ERRORE: Mossa non trovata per carta ID " + idCarta);
+//            System.err.println("Le mosse valide erano:");
+//            for (MossaValida m : mosse) {
+//                System.err.println("  - ID=" + m.getIdCarta());
+//            }
+//        }
+//
+//        view.updateDisplay(game);
+//        System.out.println("=== FINE TENTATIVO ===\n");
+//
+//    }
+@Override
+public void giocaCarta(int idCarta) {
+    System.out.println("=== IA GIOCA CARTA ID: " + idCarta + " ===");
+    game.giocaCartaById(idCarta);
+    view.updateDisplay(game);
+}
 
-        List<MossaValida> mosse = game.getMosseValide();
-        System.out.println("Mosse valide trovate: " + mosse.size());
 
-        for (MossaValida m : mosse) {
-            System.out.println("  - Mossa valida: ID=" + m.getIdCarta() + ", Valore=" + m.getValoreCarta());
-        }
-
-        boolean mossaTrovata = false;
-        for (MossaValida m : mosse) {
-            if (m.getIdCarta() == idCarta) {
-                System.out.println("✓ Mossa trovata! Eseguo...");
-                game.giocaMossa(m);
-                mossaTrovata = true;
-                break;
-            }
-        }
-
-        if (!mossaTrovata) {
-            System.err.println("✗ ERRORE: Mossa non trovata per carta ID " + idCarta);
-            System.err.println("Le mosse valide erano:");
-            for (MossaValida m : mosse) {
-                System.err.println("  - ID=" + m.getIdCarta());
-            }
-        }
-
-        view.updateDisplay(game);
-        System.out.println("=== FINE TENTATIVO ===\n");
-
-    }
 
     @Override
     public void pescaCarta() {
@@ -85,7 +93,6 @@ public class GameController implements GameActions{
                 turnoIAseNecessario(); // 👈 SOLO QUI
             }
 
-            turnoIAseNecessario();
         } catch (Exception e) {
             System.err.println("✗ Errore nell'inizializzazione:");
             e.printStackTrace();

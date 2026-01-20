@@ -16,12 +16,18 @@ public class Posizione {
     private int colonna;
 
     @Param(3)
-    private String copertaString; // ← Cambiato da boolean a String
+    private int coperta; // 1 = coperta, 0 = scoperta
 
-    // Campo interno per gestire il valore come boolean
-    private boolean coperta;
-
+    // Costruttore vuoto (OBBLIGATORIO per EmbASP)
     public Posizione() {}
+
+    // Costruttore comodo per Java
+    public Posizione(int id, int riga, int colonna, boolean coperta) {
+        this.id = id;
+        this.riga = riga;
+        this.colonna = colonna;
+        this.coperta = coperta ? 1 : 0;
+    }
 
     public int getId() {
         return id;
@@ -47,26 +53,20 @@ public class Posizione {
         this.colonna = colonna;
     }
 
-    // Getter e Setter per copertaString (usato da EMBASP)
-    public String getCopertaString() {
-        return copertaString;
-    }
-
-    public void setCopertaString(String copertaString) {
-        this.copertaString = copertaString;
-        // Converti la stringa in boolean
-        this.coperta = "true".equals(copertaString);
-    }
-
-    // Getter e Setter per coperta (usato dal resto del codice)
-    public boolean isCoperta() {
+    public int getCoperta() {
         return coperta;
     }
 
-    public void setCoperta(boolean coperta) {
+    // 👇 OBBLIGATORIO PER EMBASP (UNO SOLO!)
+    public void setCoperta(int coperta) {
         this.coperta = coperta;
-        this.copertaString = String.valueOf(coperta);
     }
+
+    // 👇 QUESTO sostituisce il campo boolean
+    public boolean isCoperta() {
+        return coperta == 1;
+    }
+
 
     @Override
     public String toString() {
@@ -74,7 +74,7 @@ public class Posizione {
                 "id=" + id +
                 ", riga=" + riga +
                 ", colonna=" + colonna +
-                ", coperta=" + coperta +
+                ", coperta=" + (coperta == 1) +
                 '}';
     }
 }
