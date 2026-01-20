@@ -3,7 +3,7 @@
 % ===================================================================
 
 % Una carta è giocabile se la sua posizione non è coperta
-carta_giocabile(ID) :- carta(ID, _, _, Pos), posizione(Pos, _, _, 09).
+carta_giocabile(ID) :- carta(ID, _, _, Pos), posizione(Pos, _, _, 0).
 
 % Definisce quando due valori sono adiacenti (distanza 1)
 
