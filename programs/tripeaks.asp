@@ -21,3 +21,27 @@ mossa_valida(ID, V) :-
     carta(ID, V, _, _),
     carta_scarto(VS),
     adiacente(V, VS).
+% esiste almeno una mossa valida
+esiste_mossa :- mossa_valida(_, _).
+
+% -------------------------------
+% SCELTA DELL'AZIONE
+% -------------------------------
+
+% Scelta: per ogni mossa valida, può essere giocata o no
+azione_gioca(ID) | non_gioca(ID) :- mossa_valida(ID, _).
+
+% VINCOLO: se esiste una mossa, devo giocarne ESATTAMENTE UNA
+:- esiste_mossa, #count{ID : azione_gioca(ID)} != 1.
+
+% Se NON esiste una mossa e posso pescare → pesca
+azione_pesca :- not esiste_mossa, puo_pescare.
+
+% Non posso fare entrambe le cose
+:- azione_gioca(_), azione_pesca.
+
+% -------------------------------
+% OUTPUT
+% -------------------------------
+#show azione_gioca/1.
+#show azione_pesca/0.

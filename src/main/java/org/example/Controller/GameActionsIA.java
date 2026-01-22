@@ -2,10 +2,7 @@ package org.example.Controller;
 
 import org.example.AzioneGioca;
 import org.example.AzionePesca;
-import org.example.MossaValida;
 import org.example.TriPeaksGame;
-
-import java.util.List;
 
 public class GameActionsIA {
     private final GameActions controller;
@@ -59,10 +56,6 @@ public class GameActionsIA {
         else {
             System.err.println("⚠️ Azione ASP sconosciuta: " + azione);
         }
-    }
-
-    private MossaValida scegliMossa(List<MossaValida> mosse) {
-        return mosse.get(0); // per ora naive
     }
 
 }

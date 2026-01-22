@@ -28,11 +28,12 @@ public class TriPeaksGame {
             DLV2DesktopService service = new DLV2DesktopService(solverPath);
             this.handler = new DesktopHandler(service);
 
+            ASPMapper.getInstance().registerClass(MossaValida.class);
             ASPMapper.getInstance().registerClass(AzioneGioca.class);
             ASPMapper.getInstance().registerClass(AzionePesca.class);
             ASPMapper.getInstance().registerClass(Carta.class);
             ASPMapper.getInstance().registerClass(Posizione.class);
-            ASPMapper.getInstance().registerClass(MossaValida.class);
+
 
             this.layout = new ArrayList<>();
             this.mazzo = new ArrayList<>();
@@ -175,12 +176,20 @@ public class TriPeaksGame {
                 program.addObjectInput(pos);
             }
 
-            // Carta scarto
+            System.out.println("\n🎴 DEBUG CARTA SCARTO (decidiAzioneASP)");
+            System.out.println("  ID=" + cartaScarto.getId() +
+                    " Valore=" + cartaScarto.getValore() +
+                    " Seme=" + cartaScarto.getSeme());
+
             program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
+
 
             // Posso pescare?
             if (!mazzo.isEmpty()) {
                 program.addProgram("puo_pescare.");
+                System.out.println("  ✓ Può pescare (mazzo: " + mazzo.size() + " carte)");
+            } else {
+                System.out.println("  ✗ Non può pescare (mazzo vuoto)");
             }
 
             // Regole ASP
@@ -192,15 +201,29 @@ public class TriPeaksGame {
             AnswerSets answers = (AnswerSets) output;
 
             if (answers.getAnswersets().isEmpty()) {
+                System.err.println("⚠️ NESSUN ANSWER SET! Partita probabilmente persa.");
                 return null;
             }
-
             AnswerSet as = answers.getAnswersets().get(0);
 
+            System.out.println("📦 Answer set ricevuto con " + as.getAtoms().size() + " atomi");
+
+
             for (Object atom : as.getAtoms()) {
-                if (atom instanceof AzioneGioca) return atom;
-                if (atom instanceof AzionePesca) return atom;
+                System.out.println("  • " + atom.getClass().getSimpleName() + ": " + atom);
+
+                if (atom instanceof AzioneGioca) {
+                    AzioneGioca azione = (AzioneGioca) atom;
+                    System.out.println("✅ DECISIONE: Gioca carta ID=" + azione.getIdCarta());
+                    return atom;
+                }
+                if (atom instanceof AzionePesca) {
+                    System.out.println("✅ DECISIONE: Pesca dal mazzo");
+                    return atom;
+                }
             }
+            System.err.println("⚠️ Nessuna azione trovata nell'answer set!");
+
 
             return null;
         } catch (Exception e) {
@@ -236,10 +259,18 @@ public class TriPeaksGame {
                         ", Coperta=" + pos.isCoperta());
             }
 
-            // Aggiungi il valore della carta scarto
+            System.out.println("\n🎴 DEBUG CARTA SCARTO (JAVA):");
+            System.out.println("  ID      = " + cartaScarto.getId());
+            System.out.println("  Valore  = " + cartaScarto.getValore());
+            System.out.println("  Seme    = " + cartaScarto.getSeme());
+            System.out.println("  Pos     = " + cartaScarto.getPosizione());
+
+// ⚠️ PASSA L'ID, NON IL VALORE
             String scartoRule = "carta_scarto(" + cartaScarto.getValore() + ").";
-            System.out.println("\n🎴 Carta scarto: " + scartoRule);
+            System.out.println("  ASP --> " + scartoRule);
+
             program.addProgram(scartoRule);
+
 
             // Aggiungi il file con le regole ASP
             String aspFilePath = "programs/tripeaks.asp";
@@ -253,14 +284,33 @@ public class TriPeaksGame {
                 System.err.println("  Directory corrente: " + new java.io.File(".").getAbsolutePath());
             }
 
+            if (!mazzo.isEmpty()) {
+                program.addProgram("puo_pescare.");
+            }
             program.addFilesPath(aspFilePath);
 
             handler.addProgram(program);
 
             System.out.println("\n🔧 Esecuzione solver...");
-            if (!mazzo.isEmpty()) {
-                program.addProgram("puo_pescare.");
+
+            // --- DEBUG: stampo tutti gli atomi ASP che mandiamo al solver ---
+            System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
+            for (Carta carta : layout) {
+                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
+                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
             }
+
+            for (Posizione pos : posizioni) {
+                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
+                        pos.getColonna() + "," + pos.getCoperta() + ").");
+            }
+
+            System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
+            if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
+            System.out.println("--- FINE ATOMI ---\n");
+
+
+
             Output output = handler.startSync();
             AnswerSets answers = (AnswerSets) output;
 

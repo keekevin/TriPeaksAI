@@ -1,11 +1,9 @@
 package org.example.Controller;
 
 import org.example.ModalitaGioco;
-import org.example.MossaValida;
 import org.example.TriPeaksGUI;
 import org.example.TriPeaksGame;
 
-import java.util.List;
 
 public class GameController implements GameActions{
     private ModalitaGioco modalita;
@@ -105,7 +103,7 @@ public void giocaCarta(int idCarta) {
             new Thread(() -> {
                 try {
                     while (!game.isFinita()) {
-                        Thread.sleep(600);
+                        Thread.sleep(4000);
                         ia.faiMossa();
                     }
                 } catch (InterruptedException ignored) {}
