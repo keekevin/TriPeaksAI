@@ -260,10 +260,10 @@ public class TriPeaksGame {
             }
 
             System.out.println("\n🎴 DEBUG CARTA SCARTO (JAVA):");
-            System.out.println("  ID      = " + cartaScarto.getId());
+//            System.out.println("  ID      = " + cartaScarto.getId());
             System.out.println("  Valore  = " + cartaScarto.getValore());
-            System.out.println("  Seme    = " + cartaScarto.getSeme());
-            System.out.println("  Pos     = " + cartaScarto.getPosizione());
+//            System.out.println("  Seme    = " + cartaScarto.getSeme());
+//            System.out.println("  Pos     = " + cartaScarto.getPosizione());
 
 // ⚠️ PASSA L'ID, NON IL VALORE
             String scartoRule = "carta_scarto(" + cartaScarto.getValore() + ").";

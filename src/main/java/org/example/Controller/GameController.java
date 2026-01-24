@@ -103,7 +103,7 @@ public void giocaCarta(int idCarta) {
             new Thread(() -> {
                 try {
                     while (!game.isFinita()) {
-                        Thread.sleep(4000);
+                        Thread.sleep(15000);
                         ia.faiMossa();
                     }
                 } catch (InterruptedException ignored) {}

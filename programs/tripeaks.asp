@@ -1,47 +1,69 @@
-% ===================================================================
-% REGOLE TRIPEAKS - Versione garantita funzionante per DLV2
-% ===================================================================
-
-% Una carta è giocabile se la sua posizione non è coperta
 carta_giocabile(ID) :- carta(ID, _, _, Pos), posizione(Pos, _, _, 0).
-
-% Definisce quando due valori sono adiacenti (distanza 1)
 
 valore(1..13).
 adiacente(X,Y):- valore(X), valore(Y), X = Y + 1.
 adiacente(X,Y):- valore(X), valore(Y), X = Y - 1.
-
-% Caso speciale: Re (13) e Asso (1) sono adiacenti
 adiacente(1, 13).
 adiacente(13, 1).
 
-% Una mossa è valida se la carta è giocabile e il suo valore è adiacente alla carta scarto
 mossa_valida(ID, V) :-
     carta_giocabile(ID),
     carta(ID, V, _, _),
     carta_scarto(VS),
     adiacente(V, VS).
-% esiste almeno una mossa valida
+
 esiste_mossa :- mossa_valida(_, _).
 
-% -------------------------------
-% SCELTA DELL'AZIONE
-% -------------------------------
-
-% Scelta: per ogni mossa valida, può essere giocata o no
-azione_gioca(ID) | non_gioca(ID) :- mossa_valida(ID, _).
-
-% VINCOLO: se esiste una mossa, devo giocarne ESATTAMENTE UNA
-:- esiste_mossa, #count{ID : azione_gioca(ID)} != 1.
-
-% Se NON esiste una mossa e posso pescare → pesca
+{ azione_gioca(ID) : mossa_valida(ID, _) } = 1 :- esiste_mossa.
 azione_pesca :- not esiste_mossa, puo_pescare.
 
-% Non posso fare entrambe le cose
-:- azione_gioca(_), azione_pesca.
+% -------------------------------
+% STEP 1: Relazioni di copertura
+% -------------------------------
+copre(Pos1, Pos2) :-
+    posizione(Pos1, R1, C1, _),
+    posizione(Pos2, R2, C2, _),
+    R1 = R2 + 1,
+    C1 >= C2 - 1,
+    C1 <= C2 + 1.
+
+carta_copre(ID1, ID2) :-
+    carta(ID1, _, _, Pos1),
+    carta(ID2, _, _, Pos2),
+    copre(Pos1, Pos2).
 
 % -------------------------------
-% OUTPUT
+% STEP 2: Scarto dopo la mossa
 % -------------------------------
+scarto_dopo(ID_giocata, V) :- mossa_valida(ID_giocata, V).
+
+% -------------------------------
+% STEP 3: Mosse successive (versione ottimizzata)
+% -------------------------------
+
+% Una mossa ha un seguito se dopo averla giocata:
+% - Esiste una carta che era già giocabile (e non è quella giocata)
+% - E il suo valore è adiacente al nuovo scarto
+mossa_dopo(ID_giocata) :-
+    scarto_dopo(ID_giocata, VScarto),
+    carta_giocabile(ID2),
+    ID2 != ID_giocata,
+    carta(ID2, V2, _, _),
+    adiacente(V2, VScarto).
+
+% -------------------------------
+% STEP 4: Mosse sicure
+% -------------------------------
+mossa_sicura(ID) :-
+    mossa_valida(ID, _),
+    mossa_dopo(ID).
+
+esiste_mossa_sicura :- mossa_sicura(_).
+
+:~ azione_gioca(ID), not mossa_sicura(ID), esiste_mossa_sicura. [1@1, ID]
+
 #show azione_gioca/1.
 #show azione_pesca/0.
+#show mossa_dopo/1.  % DEBUG
+#show mossa_sicura/1.  % DEBUG
+
