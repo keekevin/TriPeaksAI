@@ -18,7 +18,7 @@ esiste_mossa :- mossa_valida(_, _).
 azione_pesca :- not esiste_mossa, puo_pescare.
 
 % -------------------------------
-% STEP 1: Relazioni di copertura
+% Relazioni di copertura
 % -------------------------------
 copre(Pos1, Pos2) :-
     posizione(Pos1, R1, C1, _),
@@ -33,17 +33,10 @@ carta_copre(ID1, ID2) :-
     copre(Pos1, Pos2).
 
 % -------------------------------
-% STEP 2: Scarto dopo la mossa
+% Lookahead profondità 1
 % -------------------------------
 scarto_dopo(ID_giocata, V) :- mossa_valida(ID_giocata, V).
 
-% -------------------------------
-% STEP 3: Mosse successive (versione ottimizzata)
-% -------------------------------
-
-% Una mossa ha un seguito se dopo averla giocata:
-% - Esiste una carta che era già giocabile (e non è quella giocata)
-% - E il suo valore è adiacente al nuovo scarto
 mossa_dopo(ID_giocata) :-
     scarto_dopo(ID_giocata, VScarto),
     carta_giocabile(ID2),
@@ -52,18 +45,78 @@ mossa_dopo(ID_giocata) :-
     adiacente(V2, VScarto).
 
 % -------------------------------
-% STEP 4: Mosse sicure
+% Lookahead profondità 2
+% -------------------------------
+seconda_mossa(ID1, ID2) :-
+    scarto_dopo(ID1, VScarto1),
+    carta_giocabile(ID2),
+    ID2 != ID1,
+    carta(ID2, V2, _, _),
+    adiacente(V2, VScarto1).
+
+scarto_dopo_2(ID1, ID2, V2) :-
+    seconda_mossa(ID1, ID2),
+    carta(ID2, V2, _, _).
+
+disponibile_dopo_2(ID1, ID2, ID3) :-
+    seconda_mossa(ID1, ID2),
+    carta_giocabile(ID3),
+    ID3 != ID1,
+    ID3 != ID2.
+
+mossa_dopo_2(ID1, ID2) :-
+    scarto_dopo_2(ID1, ID2, V2),
+    disponibile_dopo_2(ID1, ID2, ID3),
+    carta(ID3, V3, _, _),
+    adiacente(V3, V2).
+
+ha_sequenza_2(ID1) :- mossa_dopo_2(ID1, _).
+
+% -------------------------------
+% Classificazione mosse
 % -------------------------------
 mossa_sicura(ID) :-
     mossa_valida(ID, _),
     mossa_dopo(ID).
 
+mossa_sicura_2(ID) :-
+    mossa_valida(ID, _),
+    ha_sequenza_2(ID).
+
 esiste_mossa_sicura :- mossa_sicura(_).
+esiste_sicura_2 :- mossa_sicura_2(_).
 
-:~ azione_gioca(ID), not mossa_sicura(ID), esiste_mossa_sicura. [1@1, ID]
+% -------------------------------
+% Ottimizzazione multilivello
+% -------------------------------
+:~ azione_gioca(ID), not mossa_sicura_2(ID), esiste_sicura_2. [2@1, ID]
+:~ azione_gioca(ID), not mossa_sicura(ID), esiste_mossa_sicura. [1@2, ID]
 
+% -------------------------------
+% DEBUG: Mostra penalizzazioni
+% -------------------------------
+penalizzata_livello_2(ID) :-
+    azione_gioca(ID),
+    not mossa_sicura_2(ID),
+    esiste_sicura_2.
+
+penalizzata_livello_1(ID) :-
+    azione_gioca(ID),
+    not mossa_sicura(ID),
+    esiste_mossa_sicura.
+
+mossa_ottimale(ID) :-
+    azione_gioca(ID),
+    not penalizzata_livello_2(ID),
+    not penalizzata_livello_1(ID).
+
+% -------------------------------
+% Output
+% -------------------------------
 #show azione_gioca/1.
 #show azione_pesca/0.
-#show mossa_dopo/1.  % DEBUG
-#show mossa_sicura/1.  % DEBUG
-
+#show mossa_sicura/1.           % DEBUG
+#show mossa_sicura_2/1.         % DEBUG
+#show penalizzata_livello_1/1.  % DEBUG
+#show penalizzata_livello_2/1.  % DEBUG
+#show mossa_ottimale/1.         % DEBUG

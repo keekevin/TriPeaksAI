@@ -348,7 +348,6 @@ public class TriPeaksGame {
                 System.err.println("⚠️  NESSUN ANSWER SET RESTITUITO DAL SOLVER!");
             }
 
-            System.out.println("\n🎯 Mosse valide totali: " + mosse.size());
             System.out.println("╔═══════════════════════════════════════╗");
             System.out.println("║   FINE getMosseValide()               ║");
             System.out.println("╚═══════════════════════════════════════╝\n");
