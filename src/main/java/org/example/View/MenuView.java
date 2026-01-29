@@ -9,12 +9,13 @@ public class MenuView extends JDialog {
 
     private JButton umanoButton;
     private JButton iaButton;
+    private JButton umanoVsIaButton;
     private ModalitaGioco scelta;
 
 
     public MenuView(JFrame parent) {
         super(parent,"Seleziona modalità",true);
-        setSize(300,150);
+        setSize(400,180);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10,10));
 
@@ -23,6 +24,7 @@ public class MenuView extends JDialog {
 
         umanoButton = new JButton("Gioco io");
         iaButton = new JButton("Gioca l'IA");
+        umanoVsIaButton = new JButton("Umano vs IA");
 
         umanoButton.addActionListener(e ->{
             scelta = ModalitaGioco.UMANO;
@@ -34,10 +36,16 @@ public class MenuView extends JDialog {
             dispose();
         });
 
+        umanoVsIaButton.addActionListener(e ->{
+            scelta = ModalitaGioco.UMANO_VS_IA;
+            dispose();
+        });
+
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(umanoButton);
         buttonPanel.add(iaButton);
+        buttonPanel.add(umanoVsIaButton);
 
         add(label,BorderLayout.CENTER);
         add(buttonPanel,BorderLayout.SOUTH);
@@ -49,6 +57,10 @@ public class MenuView extends JDialog {
 
     public JButton getIaButton() {
         return iaButton;
+    }
+
+    public JButton getUmanoVsIaButton() {
+        return umanoVsIaButton;
     }
 
     public ModalitaGioco getScelta() {

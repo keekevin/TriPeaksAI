@@ -313,10 +313,6 @@ public class TriPeaksGUI extends JFrame {
             this.coperta = coperta;
             this.giocabile = giocabile;
 
-            System.out.println("🔧 Creazione CartaButton: ID=" + carta.getId() +
-                    ", Valore=" + carta.getValore() +
-                    ", Coperta=" + coperta +
-                    ", Giocabile=" + giocabile);
 
             setFocusPainted(false);
             setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
@@ -325,7 +321,7 @@ public class TriPeaksGUI extends JFrame {
 
             if (coperta) {
                 setIcon(backImage);
-                setEnabled(false);
+                setEnabled(true);
                 System.out.println("  → Carta coperta, bottone disabilitato");
             } else {
                 String key = carta.getValore() + "_" + carta.getSeme();
@@ -340,8 +336,7 @@ public class TriPeaksGUI extends JFrame {
                 if (giocabile) {
                     setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
                     setBorderPainted(true);
-                    System.out.println("  → Carta GIOCABILE! Aggiungo ActionListener...");
-                    addActionListener(e -> {
+                     addActionListener(e -> {
                         System.out.println("\n🎯 CLICK RILEVATO su carta ID=" + carta.getId());
                         System.out.println("   Controller: " + (controller != null ? "OK" : "NULL"));
 

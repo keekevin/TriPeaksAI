@@ -18,10 +18,8 @@ public class Posizione {
     @Param(3)
     private int coperta; // 1 = coperta, 0 = scoperta
 
-    // Costruttore vuoto (OBBLIGATORIO per EmbASP)
     public Posizione() {}
 
-    // Costruttore comodo per Java
     public Posizione(int id, int riga, int colonna, boolean coperta) {
         this.id = id;
         this.riga = riga;
@@ -57,12 +55,10 @@ public class Posizione {
         return coperta;
     }
 
-    // 👇 OBBLIGATORIO PER EMBASP (UNO SOLO!)
     public void setCoperta(int coperta) {
         this.coperta = coperta;
     }
 
-    // 👇 QUESTO sostituisce il campo boolean
     public boolean isCoperta() {
         return coperta == 1;
     }

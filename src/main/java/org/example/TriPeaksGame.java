@@ -153,8 +153,7 @@ public class TriPeaksGame {
             pos.setRiga(coordinate[i][0]);
             pos.setColonna(coordinate[i][1]);
 
-            // Una posizione è coperta se QUALCUN ALTRO la copre
-            // Dobbiamo controllare se questa posizione appare nella lista di qualcun altro
+
             boolean estaCoperta = coperture.containsKey(i);
             pos.setCoperta(estaCoperta ? 1 : 0);
 
@@ -176,13 +175,41 @@ public class TriPeaksGame {
                 program.addObjectInput(pos);
             }
 
+            // NUOVO: Aggiungi la mappa di copertura
+            Map<Integer, List<Integer>> map = new HashMap<>();
+            map.put(0, Arrays.asList(1, 2));
+            map.put(3, Arrays.asList(6, 7));
+            map.put(4, Arrays.asList(7, 8));
+            map.put(5, Arrays.asList(8, 15));
+            map.put(9, Arrays.asList(10, 11));
+            map.put(18, Arrays.asList(19, 20));
+            map.put(12, Arrays.asList(15, 16));
+            map.put(13, Arrays.asList(16, 17));
+            map.put(14, Arrays.asList(17, 24));
+            map.put(21, Arrays.asList(24, 25));
+            map.put(22, Arrays.asList(25, 26));
+            map.put(23, Arrays.asList(26, 27));
+            map.put(1, Arrays.asList(3, 4));
+            map.put(2, Arrays.asList(4, 5));
+            map.put(10, Arrays.asList(12, 13));
+            map.put(11, Arrays.asList(13, 14));
+            map.put(19, Arrays.asList(21, 22));
+            map.put(20, Arrays.asList(22, 23));
+
+            // Genera i fatti richiede_libera
+            for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
+                Integer posCoperta = entry.getKey();
+                for (Integer posLibera : entry.getValue()) {
+                    program.addProgram(String.format("richiede_libera(%d,%d).%n", posCoperta, posLibera));
+                }
+            }
+
             System.out.println("\n🎴 DEBUG CARTA SCARTO (decidiAzioneASP)");
             System.out.println("  ID=" + cartaScarto.getId() +
                     " Valore=" + cartaScarto.getValore() +
                     " Seme=" + cartaScarto.getSeme());
 
             program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
-
 
             // Posso pescare?
             if (!mazzo.isEmpty()) {
@@ -208,7 +235,6 @@ public class TriPeaksGame {
 
             System.out.println("📦 Answer set ricevuto con " + as.getAtoms().size() + " atomi");
 
-
             for (Object atom : as.getAtoms()) {
                 System.out.println("  • " + atom.getClass().getSimpleName() + ": " + atom);
 
@@ -223,7 +249,6 @@ public class TriPeaksGame {
                 }
             }
             System.err.println("⚠️ Nessuna azione trovata nell'answer set!");
-
 
             return null;
         } catch (Exception e) {
@@ -260,12 +285,10 @@ public class TriPeaksGame {
             }
 
             System.out.println("\n🎴 DEBUG CARTA SCARTO (JAVA):");
-//            System.out.println("  ID      = " + cartaScarto.getId());
-            System.out.println("  Valore  = " + cartaScarto.getValore());
-//            System.out.println("  Seme    = " + cartaScarto.getSeme());
-//            System.out.println("  Pos     = " + cartaScarto.getPosizione());
 
-// ⚠️ PASSA L'ID, NON IL VALORE
+            System.out.println("  Valore  = " + cartaScarto.getValore());
+
+
             String scartoRule = "carta_scarto(" + cartaScarto.getValore() + ").";
             System.out.println("  ASP --> " + scartoRule);
 
@@ -295,15 +318,15 @@ public class TriPeaksGame {
 
             // --- DEBUG: stampo tutti gli atomi ASP che mandiamo al solver ---
             System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
-            for (Carta carta : layout) {
-                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
-                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
-            }
-
-            for (Posizione pos : posizioni) {
-                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
-                        pos.getColonna() + "," + pos.getCoperta() + ").");
-            }
+//            for (Carta carta : layout) {
+//                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
+//                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
+//            }
+//
+//            for (Posizione pos : posizioni) {
+//                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
+//                        pos.getColonna() + "," + pos.getCoperta() + ").");
+//            }
 
             System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
             if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
@@ -400,10 +423,8 @@ public class TriPeaksGame {
             int cartaCoperta = entry.getKey();
             List<Integer> coprenti = entry.getValue();
 
-            // La carta rimossa copriva questa carta?
             if (!coprenti.contains(posizioneRimossa)) continue;
 
-            // La carta coperta è ancora sul layout?
             boolean sulLayout = false;
             for (Carta c : layout) {
                 if (c.getPosizione() == cartaCoperta) {
@@ -413,7 +434,6 @@ public class TriPeaksGame {
             }
             if (!sulLayout) continue;
 
-            // È ancora coperta da QUALCUNO?
             boolean ancoraCoperta = false;
             for (Integer coprente : coprenti) {
                 for (Carta c : layout) {
@@ -431,17 +451,6 @@ public class TriPeaksGame {
             }
         }
     }
-
-
-    private boolean copreCarta(int cartaCoperta, int cartaCopresente){
-        List<Integer> coprenti = coperture.get(cartaCoperta);
-        return coprenti != null && coprenti.contains(cartaCopresente);
-    }
-
-
-
-
-
     public boolean pescaCarta(){
         if(mazzo.isEmpty()){
             return false;
@@ -484,7 +493,6 @@ public class TriPeaksGame {
         return posizioni;
     }
 
-    // Converte una carta in stringa leggibile
     private String getNomeCarta(Carta carta) {
         String nomeValore;
         switch (carta.getValore()) {
@@ -521,9 +529,7 @@ public class TriPeaksGame {
     public boolean puoPescare() {
         return !mazzo.isEmpty();
     }
-    public boolean pescaObbligata() {
-        return getMosseValide().isEmpty() && puoPescare();
-    }
+
 
     public void giocaCartaById(int idCarta) {
         for (Carta c : layout) {

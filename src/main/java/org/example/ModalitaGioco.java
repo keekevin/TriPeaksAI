@@ -2,5 +2,6 @@ package org.example;
 
 public enum ModalitaGioco {
     UMANO,
-    IA
+    IA,
+    UMANO_VS_IA
 }
