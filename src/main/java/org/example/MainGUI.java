@@ -38,7 +38,14 @@ public class MainGUI {
             }
 
             // 2️⃣ Avvio gioco con modalità scelta
-            new GameController(solverPath, modalita);
+            if (modalita == ModalitaGioco.UMANO_VS_IA) {
+                // ✨ NUOVA MODALITÀ - Turni alternati
+                DualGameGUI dualGUI = new DualGameGUI(solverPath);
+                dualGUI.setVisible(true);
+            } else {
+                // Modalità esistenti (UMANO o IA)
+                new GameController(solverPath, modalita);
+            }
         });
     }
 }

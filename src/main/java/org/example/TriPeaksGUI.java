@@ -33,16 +33,47 @@ public class TriPeaksGUI extends JFrame {
 
 
     private Map<Integer, CartaButton> cartaButtons;
-    private static final int CARD_WIDTH = 80;
-    private static final int CARD_HEIGHT = 110;
-    private static final int CARD_SPACING_X = 90;
-    private static final int CARD_SPACING_Y = 70;
+    private static final int DEFAULT_CARD_WIDTH = 80;
+    private static final int DEFAULT_CARD_HEIGHT = 110;
+    private static final int DEFAULT_CARD_SPACING_X = 90;
+    private static final int DEFAULT_CARD_SPACING_Y = 70;
+
+    private int CARD_WIDTH;
+    private int CARD_HEIGHT;
+    private int CARD_SPACING_X;
+    private int CARD_SPACING_Y;
+    private double scaleFactor = 1.0;
+
+    public TriPeaksGUI(ModalitaGioco modalita,GameActions controller,double scale) {
+        this.modalita = modalita;
+        this.controller = controller;
+        this.cartaButtons = new HashMap<>();
+        this.cardImages = new HashMap<>();
+        this.scaleFactor = scale;
+
+        // ✅ PRIMA imposta le dimensioni scalate
+        this.CARD_WIDTH = (int)(DEFAULT_CARD_WIDTH * scale);
+        this.CARD_HEIGHT = (int)(DEFAULT_CARD_HEIGHT * scale);
+        this.CARD_SPACING_X = (int)(DEFAULT_CARD_SPACING_X * scale);
+        this.CARD_SPACING_Y = (int)(DEFAULT_CARD_SPACING_Y * scale);
+
+        // ✅ POI carica le immagini con le dimensioni corrette
+        loadCardImages();
+
+        setTitle("TriPeaks Solitaire");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1000, 1000);
+        setLocationRelativeTo(null);
+
+        initComponents();
+    }
 
     public TriPeaksGUI(ModalitaGioco modalita,GameActions controller) {
         this.modalita = modalita;
         this.controller = controller;
         this.cartaButtons = new HashMap<>();
         this.cardImages = new HashMap<>();
+        this.scaleFactor = 1.0;
         loadCardImages();
 
 
@@ -176,14 +207,14 @@ public class TriPeaksGUI extends JFrame {
 
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setColor(new Color(255,255,255,100));
-                g2d.fillRoundRect(400,550,100,150,10,10);
+                g2d.fillRoundRect((int)(400*scaleFactor),(int)(550 * scaleFactor),(int)(100 * scaleFactor),(int)(150*scaleFactor),10,10);
                 g2d.setColor(Color.WHITE);
-                g2d.drawRoundRect(400,550,100,150,10,10);
-                g2d.drawString("SCARTO",415,630);
+                g2d.drawRoundRect((int)(400*scaleFactor),(int)(550*scaleFactor),(int)(100 * scaleFactor),(int) (150*scaleFactor),10,10);
+                g2d.drawString("SCARTO",(int)(415 * scaleFactor),(int) (630 * scaleFactor));
             }
         };
         deckCardButton = new JButton(backImage);
-        deckCardButton.setBounds(280, 550, CARD_WIDTH, CARD_HEIGHT);
+        deckCardButton.setBounds((int)(280 * scaleFactor),(int)(550*scaleFactor), CARD_WIDTH, CARD_HEIGHT);
         deckCardButton.setBorderPainted(false);
         deckCardButton.setContentAreaFilled(false);
         deckCardButton.setFocusPainted(false);
@@ -193,7 +224,7 @@ public class TriPeaksGUI extends JFrame {
 
 
         wasteCardLabel = new JLabel();
-        wasteCardLabel.setBounds(400,550,CARD_WIDTH,CARD_HEIGHT);
+        wasteCardLabel.setBounds((int)(400*scaleFactor),(int)(550 * scaleFactor), CARD_WIDTH,CARD_HEIGHT);
 
         tableauPanel.add(deckCardButton);
         tableauPanel.add(wasteCardLabel);
@@ -228,17 +259,16 @@ public class TriPeaksGUI extends JFrame {
             Posizione pos = game.getPosizioni().get(carta.getPosizione());
 
             int MAX_RIGA = 3;
-            int LAST_ROW_SHIFT = -200; // valore da rifinire (+/-)
 
-
-            int offsetX = 100;
-            int offsetY = 50;
+            int LAST_ROW_SHIFT = (int)(-200 * scaleFactor); // valore da rifinire (+/-)
+            int offsetX = (int)(100 * scaleFactor);
+            int offsetY = (int)(50*scaleFactor);
 
             int x;
             int y = offsetY + pos.getRiga() * CARD_SPACING_Y;
 
             if (pos.getRiga() == MAX_RIGA) {
-                x = 120
+                x = (int)(120 * scaleFactor)
                         + pos.getColonna() * CARD_SPACING_X
                         + pos.getRiga() * (CARD_SPACING_X / 2)
                         + LAST_ROW_SHIFT;
