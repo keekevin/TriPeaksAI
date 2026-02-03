@@ -1,8 +1,8 @@
 package org.example.Controller;
 
-import org.example.AzioneGioca;
-import org.example.AzionePesca;
-import org.example.TriPeaksGame;
+import org.example.Model.AzioneGioca;
+import org.example.Model.AzionePesca;
+import org.example.Model.TriPeaksGame;
 
 public class GameActionsIA {
     private final GameActions controller;

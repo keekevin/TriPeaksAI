@@ -1,6 +1,6 @@
 package org.example.View;
 
-import org.example.ModalitaGioco;
+import org.example.Model.ModalitaGioco;
 
 import javax.swing.*;
 import java.awt.*;

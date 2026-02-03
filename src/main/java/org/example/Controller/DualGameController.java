@@ -1,7 +1,7 @@
 package org.example.Controller;
 
-import org.example.GameStateSnapshot;
-import org.example.TriPeaksGame;
+import org.example.Model.GameStateSnapshot;
+import org.example.Model.TriPeaksGame;
 
 public class DualGameController {
     private final String solverPath;
@@ -30,6 +30,9 @@ public class DualGameController {
 
         playerGame = GameStateSnapshot.ripristina(initialState, solverPath);
         aiGame = GameStateSnapshot.ripristina(initialState,solverPath);
+
+        playerMoves = 0;
+        aiMoves = 0;
 
         System.out.println("✅ Partita dual inizializzata!");
         System.out.println("   Seed (interno): " + System.identityHashCode(initialState));

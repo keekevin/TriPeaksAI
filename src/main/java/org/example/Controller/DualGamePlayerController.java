@@ -1,6 +1,6 @@
 package org.example.Controller;
 
-import org.example.DualGameGUI;
+import org.example.View.DualGameGUI;
 
 public class DualGamePlayerController implements GameActions{
 
@@ -45,5 +45,5 @@ public class DualGamePlayerController implements GameActions{
     }
 
     @Override
-    public void nuovaPartita() {}
+    public void nuovaPartita() {  }
 }

@@ -1,8 +1,8 @@
 package org.example.Controller;
 
-import org.example.ModalitaGioco;
-import org.example.TriPeaksGUI;
-import org.example.TriPeaksGame;
+import org.example.Model.ModalitaGioco;
+import org.example.View.TriPeaksGUI;
+import org.example.Model.TriPeaksGame;
 
 
 public class GameController implements GameActions{

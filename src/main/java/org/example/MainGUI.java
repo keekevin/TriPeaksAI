@@ -1,6 +1,8 @@
 package org.example;
 
 import org.example.Controller.GameController;
+import org.example.Model.ModalitaGioco;
+import org.example.View.DualGameGUI;
 import org.example.View.MenuView;
 
 import javax.swing.*;

@@ -145,9 +145,5 @@ mossa_ottimale(ID) :-
 #show mossa_ottimale/1.
 
 % DEBUG - Mostra tutto il processo di scoperta carte
-#show carta_copre/2.              % Chi copre chi
-#show ha_altra_copertura/2.       % Carte con coperture multiple
-#show scopre_carta/1.             % Mosse che scoprono carte
-#show esiste_mossa_che_scopre/0.  % Flag: esistono mosse che scoprono
 #show mossa_valida/2.             % Tutte le mosse valide
 #show carta_giocabile/1.          % Tutte le carte giocabili

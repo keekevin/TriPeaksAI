@@ -1,8 +1,8 @@
 package org.example.Controller;
 
-import org.example.AzioneGioca;
-import org.example.AzionePesca;
-import org.example.DualGameGUI;
+import org.example.Model.AzioneGioca;
+import org.example.Model.AzionePesca;
+import org.example.View.DualGameGUI;
 
 public class DualGameAIController implements GameActions{
 

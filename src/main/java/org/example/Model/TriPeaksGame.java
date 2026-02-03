@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Model;
 
 import it.unical.mat.embasp.base.Handler;
 import it.unical.mat.embasp.base.InputProgram;
@@ -318,15 +318,15 @@ public class TriPeaksGame {
 
             // --- DEBUG: stampo tutti gli atomi ASP che mandiamo al solver ---
             System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
-//            for (Carta carta : layout) {
-//                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
-//                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
-//            }
-//
-//            for (Posizione pos : posizioni) {
-//                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
-//                        pos.getColonna() + "," + pos.getCoperta() + ").");
-//            }
+            for (Carta carta : layout) {
+                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
+                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
+            }
+
+            for (Posizione pos : posizioni) {
+                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
+                        pos.getColonna() + "," + pos.getCoperta() + ").");
+            }
 
             System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
             if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
@@ -367,6 +367,7 @@ public class TriPeaksGame {
                         System.out.println("  ✓ MossaValida trovata: " + mossa);
                     }
                 }
+
             } else {
                 System.err.println("⚠️  NESSUN ANSWER SET RESTITUITO DAL SOLVER!");
             }

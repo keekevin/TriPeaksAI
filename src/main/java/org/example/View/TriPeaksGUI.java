@@ -1,6 +1,7 @@
-package org.example;
+package org.example.View;
 
 import org.example.Controller.GameActions;
+import org.example.Model.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -44,7 +45,7 @@ public class TriPeaksGUI extends JFrame {
     private int CARD_SPACING_Y;
     private double scaleFactor = 1.0;
 
-    public TriPeaksGUI(ModalitaGioco modalita,GameActions controller,double scale) {
+    public TriPeaksGUI(ModalitaGioco modalita,GameActions controller,double scale,boolean isDualMode) {
         this.modalita = modalita;
         this.controller = controller;
         this.cartaButtons = new HashMap<>();
@@ -65,7 +66,7 @@ public class TriPeaksGUI extends JFrame {
         setSize(1000, 1000);
         setLocationRelativeTo(null);
 
-        initComponents();
+        initComponents(!isDualMode);
     }
 
     public TriPeaksGUI(ModalitaGioco modalita,GameActions controller) {
@@ -74,6 +75,12 @@ public class TriPeaksGUI extends JFrame {
         this.cartaButtons = new HashMap<>();
         this.cardImages = new HashMap<>();
         this.scaleFactor = 1.0;
+
+        this.CARD_WIDTH = DEFAULT_CARD_WIDTH;
+        this.CARD_HEIGHT = DEFAULT_CARD_HEIGHT;
+        this.CARD_SPACING_X = DEFAULT_CARD_SPACING_X;
+        this.CARD_SPACING_Y = DEFAULT_CARD_SPACING_Y;
+
         loadCardImages();
 
 
@@ -165,45 +172,50 @@ public class TriPeaksGUI extends JFrame {
         return new ImageIcon(img);
     }
 
-    private void initComponents() {
+
+
+    // ✅ VERSIONE CON PARAMETRO (usata da dual mode)
+    private void initComponents(boolean showControls) {
         setLayout(new BorderLayout(10, 10));
 
-        // Panel superiore con punteggio e controlli
-        controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        controlPanel.setBackground(new Color(0, 100, 0));
+        // ✨ MOSTRA CONTROLLI SOLO SE RICHIESTO
+        if (showControls) {
+            // Panel superiore con punteggio e controlli
+            controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+            controlPanel.setBackground(new Color(0, 100, 0));
 
-        scoreLabel = new JLabel("Punteggio: 0");
-        scoreLabel.setForeground(Color.WHITE);
-        scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            scoreLabel = new JLabel("Punteggio: 0");
+            scoreLabel.setForeground(Color.WHITE);
+            scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        deckLabel = new JLabel("Mazzo: 24");
-        deckLabel.setForeground(Color.WHITE);
-        deckLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            deckLabel = new JLabel("Mazzo: 24");
+            deckLabel.setForeground(Color.WHITE);
+            deckLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        wasteLabel = new JLabel("Scarto: ");
-        wasteLabel.setForeground(Color.WHITE);
-        wasteLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            wasteLabel = new JLabel("Scarto: ");
+            wasteLabel.setForeground(Color.WHITE);
+            wasteLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        drawButton = new JButton("Pesca Carta");
-        drawButton.addActionListener(e -> controller.pescaCarta());
+            drawButton = new JButton("Pesca Carta");
+            drawButton.addActionListener(e -> controller.pescaCarta());
 
-        newGameButton = new JButton("Nuova Partita");
-        newGameButton.addActionListener(e -> controller.nuovaPartita());
+            newGameButton = new JButton("Nuova Partita");
+            newGameButton.addActionListener(e -> controller.nuovaPartita());
 
-        controlPanel.add(scoreLabel);
-        controlPanel.add(deckLabel);
-        controlPanel.add(wasteLabel);
-        controlPanel.add(drawButton);
-        controlPanel.add(newGameButton);
+            controlPanel.add(scoreLabel);
+            controlPanel.add(deckLabel);
+            controlPanel.add(wasteLabel);
+            controlPanel.add(drawButton);
+            controlPanel.add(newGameButton);
 
-        add(controlPanel, BorderLayout.NORTH);
+            add(controlPanel, BorderLayout.NORTH);
+        }
 
-        // Panel centrale con il tableau
+        // Panel centrale con il tableau (SEMPRE PRESENTE)
         tableauPanel = new JPanel(null){
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-
 
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setColor(new Color(255,255,255,100));
@@ -213,15 +225,14 @@ public class TriPeaksGUI extends JFrame {
                 g2d.drawString("SCARTO",(int)(415 * scaleFactor),(int) (630 * scaleFactor));
             }
         };
+
         deckCardButton = new JButton(backImage);
         deckCardButton.setBounds((int)(280 * scaleFactor),(int)(550*scaleFactor), CARD_WIDTH, CARD_HEIGHT);
         deckCardButton.setBorderPainted(false);
         deckCardButton.setContentAreaFilled(false);
         deckCardButton.setFocusPainted(false);
         deckCardButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
         deckCardButton.addActionListener(e -> controller.pescaCarta());
-
 
         wasteCardLabel = new JLabel();
         wasteCardLabel.setBounds((int)(400*scaleFactor),(int)(550 * scaleFactor), CARD_WIDTH,CARD_HEIGHT);
@@ -233,6 +244,10 @@ public class TriPeaksGUI extends JFrame {
         add(tableauPanel, BorderLayout.CENTER);
     }
 
+    // ✅ VERSIONE SENZA PARAMETRO (usata da modalità normale)
+    private void initComponents() {
+        initComponents(true);  // ✅ DELEGA ALLA VERSIONE CON PARAMETRO
+    }
     public void updateDisplay(TriPeaksGame game) {
 
         this.game = game;
@@ -244,8 +259,7 @@ public class TriPeaksGUI extends JFrame {
         }
 
         cartaButtons.clear();
-        // ORDINA LE CARTE PER RIGA (dal basso verso l'alto)
-        // Così le carte in alto vengono disegnate sopra quelle in basso
+
         List<Carta> carteOrdinate = new ArrayList<>(game.getLayout());
         carteOrdinate.sort((c1, c2) -> {
             Posizione pos1 = game.getPosizioni().get(c1.getPosizione());
@@ -294,32 +308,45 @@ public class TriPeaksGUI extends JFrame {
             cartaButtons.put(carta.getId(), btn);
 
         }
+        if(scoreLabel != null){
+            scoreLabel.setText("Punteggio: " + game.getPunteggio());
+        }
 
-        scoreLabel.setText("Punteggio: " + game.getPunteggio());
-        deckLabel.setText("Mazzo: " + game.getCarteRimanentiMazzo());
-        wasteLabel.setText("Scarto: " + game.getCartaScartoString());
+        if(deckLabel != null){
+            deckLabel.setText("Mazzo: " + game.getCarteRimanentiMazzo());
+        }
+        if(wasteLabel != null){
+            wasteLabel.setText("Scarto: " + game.getCartaScartoString());
+        }
 
-        drawButton.setEnabled(game.getCarteRimanentiMazzo() > 0);
+        if(drawButton != null){
+            drawButton.setEnabled(game.getCarteRimanentiMazzo() > 0);
+        }
+
 
         tableauPanel.revalidate();
         tableauPanel.repaint();
 
-        if (game.haVinto()) {
-            JOptionPane.showMessageDialog(this,
-                    "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio(),
-                    "Vittoria!", JOptionPane.INFORMATION_MESSAGE);
-        } else if (game.haPerso()) {
-            JOptionPane.showMessageDialog(this,
-                    "😞 Game Over! Punteggio: " + game.getPunteggio(),
-                    "Sconfitta", JOptionPane.INFORMATION_MESSAGE);
+        if(scoreLabel != null){
+            if (game.haVinto()) {
+                JOptionPane.showMessageDialog(this,
+                        "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio(),
+                        "Vittoria!", JOptionPane.INFORMATION_MESSAGE);
+            } else if (game.haPerso()) {
+                JOptionPane.showMessageDialog(this,
+                        "😞 Game Over! Punteggio: " + game.getPunteggio(),
+                        "Sconfitta", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
 
-        if(game.getCarteRimanentiMazzo() > 0){
+        if (game.getCarteRimanentiMazzo() > 0) {
+            if (deckCardButton.getParent() == null) {
+                tableauPanel.add(deckCardButton);
+            }
             deckCardButton.setIcon(backImage);
-            deckCardButton.setVisible(true);
-            deckCardButton.setEnabled(game.getCarteRimanentiMazzo() > 0);
-        }else{
-            deckCardButton.setVisible(false);
+            deckCardButton.setEnabled(true);
+        } else {
+            tableauPanel.remove(deckCardButton);
         }
 
         Carta scarto = game.getCartaScartoObj();
@@ -328,6 +355,9 @@ public class TriPeaksGUI extends JFrame {
             ImageIcon icon = cardImages.get(key);
             wasteCardLabel.setIcon(icon);
         }
+
+        tableauPanel.revalidate();
+        tableauPanel.repaint();
     }
 
 

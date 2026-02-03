@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Model;
 
 public class AzioneIA {
     public enum Tipo{GIOCA,PESCA}
