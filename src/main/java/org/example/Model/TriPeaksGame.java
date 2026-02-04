@@ -154,8 +154,8 @@ public class TriPeaksGame {
             pos.setColonna(coordinate[i][1]);
 
 
-            boolean estaCoperta = coperture.containsKey(i);
-            pos.setCoperta(estaCoperta ? 1 : 0);
+            boolean iscoperta = coperture.containsKey(i);
+            pos.setCoperta(iscoperta ? 1 : 0);
 
             posizioni.add(pos);
         }
@@ -166,7 +166,6 @@ public class TriPeaksGame {
             handler.removeAll();
             InputProgram program = new ASPInputProgram();
 
-            // Stato del layout
             for (Carta carta : layout) {
                 program.addObjectInput(carta);
             }
@@ -175,7 +174,6 @@ public class TriPeaksGame {
                 program.addObjectInput(pos);
             }
 
-            // NUOVO: Aggiungi la mappa di copertura
             Map<Integer, List<Integer>> map = new HashMap<>();
             map.put(0, Arrays.asList(1, 2));
             map.put(3, Arrays.asList(6, 7));
@@ -196,7 +194,6 @@ public class TriPeaksGame {
             map.put(19, Arrays.asList(21, 22));
             map.put(20, Arrays.asList(22, 23));
 
-            // Genera i fatti richiede_libera
             for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
                 Integer posCoperta = entry.getKey();
                 for (Integer posLibera : entry.getValue()) {
@@ -204,14 +201,10 @@ public class TriPeaksGame {
                 }
             }
 
-            System.out.println("\n🎴 DEBUG CARTA SCARTO (decidiAzioneASP)");
-            System.out.println("  ID=" + cartaScarto.getId() +
-                    " Valore=" + cartaScarto.getValore() +
-                    " Seme=" + cartaScarto.getSeme());
+
 
             program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
 
-            // Posso pescare?
             if (!mazzo.isEmpty()) {
                 program.addProgram("puo_pescare.");
                 System.out.println("  ✓ Può pescare (mazzo: " + mazzo.size() + " carte)");
@@ -219,7 +212,6 @@ public class TriPeaksGame {
                 System.out.println("  ✗ Non può pescare (mazzo vuoto)");
             }
 
-            // Regole ASP
             program.addFilesPath("programs/tripeaks.asp");
 
             handler.addProgram(program);
@@ -295,7 +287,6 @@ public class TriPeaksGame {
             program.addProgram(scartoRule);
 
 
-            // Aggiungi il file con le regole ASP
             String aspFilePath = "programs/tripeaks.asp";
             System.out.println("\n📄 Caricamento file ASP: " + aspFilePath);
 
@@ -316,33 +307,26 @@ public class TriPeaksGame {
 
             System.out.println("\n🔧 Esecuzione solver...");
 
-            // --- DEBUG: stampo tutti gli atomi ASP che mandiamo al solver ---
-            System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
-            for (Carta carta : layout) {
-                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
-                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
-            }
-
-            for (Posizione pos : posizioni) {
-                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
-                        pos.getColonna() + "," + pos.getCoperta() + ").");
-            }
-
-            System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
-            if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
-            System.out.println("--- FINE ATOMI ---\n");
+//            System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
+//            for (Carta carta : layout) {
+//                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
+//                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
+//            }
+//
+//            for (Posizione pos : posizioni) {
+//                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
+//                        pos.getColonna() + "," + pos.getCoperta() + ").");
+//            }
+//
+//            System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
+//            if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
+//            System.out.println("--- FINE ATOMI ---\n");
 
 
 
             Output output = handler.startSync();
             AnswerSets answers = (AnswerSets) output;
 
-            System.out.println("\n====== RAW ANSWER SETS ======");
-            System.out.println(answers);
-            System.out.println("=============================");
-
-            // 🔍 DEBUG: stampa gli answer set ASP grezzi
-            System.out.println("\n📦 Numero di answer sets: " + answers.getAnswersets().size());
 
             for (int i = 0; i < answers.getAnswersets().size(); i++) {
                 AnswerSet as = answers.getAnswersets().get(i);
@@ -409,9 +393,7 @@ public class TriPeaksGame {
         posizione.setCoperta(0);
 
         scopriCarteSotto(pos);
-
         cartaScarto = cartaDaGiocare;
-
         punteggio += 10;
 
         System.out.println("Giocata carta: " + getNomeCarta(cartaDaGiocare));
@@ -446,7 +428,6 @@ public class TriPeaksGame {
                 if (ancoraCoperta) break;
             }
 
-            // Se non è più coperta → scoprila
             if (!ancoraCoperta) {
                 posizioni.get(cartaCoperta).setCoperta(0);
             }
@@ -459,7 +440,6 @@ public class TriPeaksGame {
 
         cartaScarto = mazzo.remove(0);
         cartaScarto.setPosizione(-1);
-
         punteggio = Math.max(0, punteggio -5);
 
         return true;

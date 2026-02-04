@@ -83,7 +83,6 @@ public class DualGameGUI extends JFrame {
         JPanel container = new JPanel(new BorderLayout());
         container.setBackground(Color.BLACK);
 
-        // Bordo normale (inattivo)
         Border inactiveBorder = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 3),
                 title,
@@ -93,7 +92,6 @@ public class DualGameGUI extends JFrame {
         );
 
         container.setBorder(inactiveBorder);
-
         container.putClientProperty("activeColor",activeColor);
         container.putClientProperty("title",title);
 
@@ -103,7 +101,6 @@ public class DualGameGUI extends JFrame {
     public void setActivePanel(boolean isPlayerActive) {
         SwingUtilities.invokeLater(() -> {
             if (isPlayerActive) {
-                // Player attivo
                 leftPanel.setBorder(BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(playerActiveColor, 5),
                         "👤 IL TUO TAVOLO ⚡ IL TUO TURNO",
@@ -112,10 +109,8 @@ public class DualGameGUI extends JFrame {
                         playerActiveColor
                 ));
 
-                // ✨ RIMUOVI OVERLAY DAL PLAYER
                 removeOverlay(leftPanel);
 
-                // IA inattiva
                 rightPanel.setBorder(BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
                         "🤖 TAVOLO IA ⏸️",
@@ -124,11 +119,9 @@ public class DualGameGUI extends JFrame {
                         Color.GRAY
                 ));
 
-                // ✨ AGGIUNGI OVERLAY ALL'IA
                 addDarkOverlay(rightPanel);
 
             } else {
-                // IA attiva
                 rightPanel.setBorder(BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(aiActiveColor, 5),
                         "🤖 TAVOLO IA ⚡ TURNO IA",
@@ -137,10 +130,8 @@ public class DualGameGUI extends JFrame {
                         aiActiveColor
                 ));
 
-                // ✨ RIMUOVI OVERLAY DALL'IA
                 removeOverlay(rightPanel);
 
-                // Player inattivo
                 leftPanel.setBorder(BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
                         "👤 IL TUO TAVOLO ⏸️",
@@ -149,7 +140,6 @@ public class DualGameGUI extends JFrame {
                         Color.GRAY
                 ));
 
-                // ✨ AGGIUNGI OVERLAY AL PLAYER
                 addDarkOverlay(leftPanel);
             }
 
@@ -163,10 +153,8 @@ public class DualGameGUI extends JFrame {
 
 
     private void addDarkOverlay(JPanel panel) {
-        // Rimuovi overlay precedente se esiste
         removeOverlay(panel);
 
-        // Crea overlay semi-trasparente
         JPanel overlay = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -178,12 +166,10 @@ public class DualGameGUI extends JFrame {
         };
 
         overlay.setOpaque(false);
-        overlay.setName("darkOverlay"); // Tag per trovarlo dopo
+        overlay.setName("darkOverlay");
 
-        // Aggiungi SOPRA tutto (usa un GlassPane-like approach)
         panel.add(overlay, BorderLayout.CENTER);
-        panel.setComponentZOrder(overlay, 0); // Metti in primo piano
-
+        panel.setComponentZOrder(overlay, 0);
         panel.revalidate();
         panel.repaint();
     }
@@ -198,19 +184,6 @@ public class DualGameGUI extends JFrame {
         }
         panel.revalidate();
         panel.repaint();
-    }
-
-    private JPanel createLabeledPanel(String title,Color borderColor) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(borderColor,3),
-                title,
-                0,
-                0,
-                new Font("Arial",Font.BOLD,18),
-                Color.WHITE));
-        panel.setBackground(Color.BLACK);
-        return panel;
     }
 
 
@@ -230,8 +203,7 @@ public class DualGameGUI extends JFrame {
             leftPanel.add(playerGui.getContentPane(), BorderLayout.CENTER);
             rightPanel.add(aiGui.getContentPane(), BorderLayout.CENTER);
 
-            // ✅ USA IL NUOVO METODO
-            setActivePanel(true);  // Player attivo all'inizio
+            setActivePanel(true);
 
             revalidate();
             repaint();
@@ -261,8 +233,17 @@ public class DualGameGUI extends JFrame {
                 return;
             }
 
+            if (dualController.isAiFinished()) {
+                if (dualController.getAiGame().haVinto()) {
+                    return;
+                }
+                playerTurn = true;
+                setActivePanel(true);
+                return;
+            }
+
             playerTurn = false;
-            setActivePanel(false);  // ✅ IA attiva
+            setActivePanel(false);
 
             Timer timer = new Timer(1000, e -> turnoIA());
             timer.setRepeats(false);
@@ -285,7 +266,7 @@ public class DualGameGUI extends JFrame {
             onAIFinished();
         } else {
             playerTurn = true;
-            setActivePanel(true);  // ✅ Player attivo
+            setActivePanel(true);
         }
     }
 
@@ -306,38 +287,147 @@ public class DualGameGUI extends JFrame {
     }
 
     private void onPlayerFinished() {
-        gameEnded = true;
         dualController.setPlayerFinished(true);
+        boolean playerWon = dualController.getPlayerGame().haVinto();
 
-        System.out.println("👤 Giocatore ha terminato!");
+        System.out.println("👤 Giocatore ha terminato! Vinto: " + playerWon);
 
-        // ✨ SOLO IA ATTIVA
         SwingUtilities.invokeLater(() -> {
-            leftPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                    "👤 IL TUO TAVOLO ✅ COMPLETATO",
-                    0, 0,
-                    new Font("Arial", Font.BOLD, 16),
-                    Color.GREEN
-            ));
-
-            rightPanel.setBorder(BorderFactory.createTitledBorder(
-                    BorderFactory.createLineBorder(Color.ORANGE, 5),
-                    "🤖 TAVOLO IA ⚡ CONTINUA DA SOLA...",
-                    0, 0,
-                    new Font("Arial", Font.BOLD, 20),
-                    Color.ORANGE
-            ));
+            if (playerWon) {
+                leftPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GREEN, 3),
+                        "👤 IL TUO TAVOLO ✅ HAI VINTO!",
+                        0, 0,
+                        new Font("Arial", Font.BOLD, 16),
+                        Color.GREEN
+                ));
+            } else {
+                leftPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.RED, 2),
+                        "👤 IL TUO TAVOLO ❌ BLOCCATO",
+                        0, 0,
+                        new Font("Arial", Font.BOLD, 16),
+                        Color.RED
+                ));
+            }
         });
 
-        continuaAI();
+        if (playerWon) {
+            if (dualController.isAiFinished()) {
+                gameEnded = true;
+                mostraRisultatoFinale();
+            } else {
+                System.out.println("🤖 L'IA ha un'ultima chance per pareggiare...");
+
+                SwingUtilities.invokeLater(() -> {
+                    setActivePanel(false);
+
+                    Timer timer = new Timer(1500, e -> {
+                        ultimaMossaIA();
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                });
+            }
+        }
+        else {
+            if (dualController.isAiFinished()) {
+                gameEnded = true;
+                mostraRisultatoFinale();
+            } else {
+                continuaAI();
+            }
+        }
     }
 
     private void onAIFinished() {
-        gameEnded = true;
         dualController.setAiFinished(true);
+        boolean aiWon = dualController.getAiGame().haVinto();
 
-        System.out.println("🤖 IA ha terminato!");
+        System.out.println("🤖 IA ha terminato! Vinto: " + aiWon);
+
+        SwingUtilities.invokeLater(() -> {
+            if (aiWon) {
+                rightPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GREEN, 3),
+                        "🤖 TAVOLO IA ✅ IA HA VINTO!",
+                        0, 0,
+                        new Font("Arial", Font.BOLD, 16),
+                        Color.GREEN
+                ));
+            } else {
+                rightPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.RED, 2),
+                        "🤖 TAVOLO IA ❌ BLOCCATA",
+                        0, 0,
+                        new Font("Arial", Font.BOLD, 16),
+                        Color.RED
+                ));
+            }
+
+            if (!aiWon && !dualController.isPlayerFinished()) {
+                leftPanel.setBorder(BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(playerActiveColor, 5),
+                        "👤 IL TUO TAVOLO ⚡ CONTINUA DA SOLO...",
+                        0, 0,
+                        new Font("Arial", Font.BOLD, 20),
+                        playerActiveColor
+                ));
+
+                removeOverlay(leftPanel);
+            }
+        });
+
+        if (aiWon) {
+            gameEnded = true;
+            mostraRisultatoFinale();
+        }
+        else {
+            if (dualController.isPlayerFinished()) {
+                gameEnded = true;
+                mostraRisultatoFinale();
+            } else {
+                playerTurn = true;
+                setActivePanel(true);
+            }
+        }
+    }
+
+    private void ultimaMossaIA() {
+        System.out.println("\n🤖 === ULTIMA MOSSA IA ===");
+
+        aiController.faiMossaIA();
+        dualController.incrementAiMoves();
+
+        updateLabels();
+        aiGui.updateDisplay(dualController.getAiGame());
+
+        gameEnded = true;
+
+        if(dualController.getAiGame().isFinita()) {
+            dualController.setAiFinished(true);
+            boolean aiWon = dualController.getAiGame().haVinto();
+
+            SwingUtilities.invokeLater(() -> {
+                if (aiWon) {
+                    rightPanel.setBorder(BorderFactory.createTitledBorder(
+                            BorderFactory.createLineBorder(Color.GREEN, 3),
+                            "🤖 TAVOLO IA ✅ IA HA VINTO!",
+                            0, 0,
+                            new Font("Arial", Font.BOLD, 16),
+                            Color.GREEN
+                    ));
+                } else {
+                    rightPanel.setBorder(BorderFactory.createTitledBorder(
+                            BorderFactory.createLineBorder(Color.RED, 2),
+                            "🤖 TAVOLO IA ❌ BLOCCATA",
+                            0, 0,
+                            new Font("Arial", Font.BOLD, 16),
+                            Color.RED
+                    ));
+                }
+            });
+        }
 
         mostraRisultatoFinale();
     }
@@ -346,7 +436,13 @@ public class DualGameGUI extends JFrame {
         Timer aiTimer = new Timer(1500, e -> {
             if (dualController.getAiGame().isFinita()) {
                 ((Timer) e.getSource()).stop();
-                mostraRisultatoFinale();
+
+                if (dualController.getAiGame().haVinto()) {
+                    onAIFinished();
+                } else {
+                    gameEnded = true;
+                    mostraRisultatoFinale();
+                }
                 return;
             }
 
@@ -362,7 +458,7 @@ public class DualGameGUI extends JFrame {
     public void mostraRisultatoFinale() {
         SwingUtilities.invokeLater(() -> {
             try {
-                Thread.sleep(1000);  // Pausa per vedere l'ultima mossa
+                Thread.sleep(1000);
             } catch (InterruptedException ignored) {}
 
             StringBuilder msg = new StringBuilder();
@@ -389,7 +485,6 @@ public class DualGameGUI extends JFrame {
 
             msg.append("\n");
 
-            // Determina il vincitore
             if (playerWon && aiWon) {
                 int diff = dualController.getPlayerMoves() - dualController.getAiMoves();
                 if (diff < 0) {
@@ -404,7 +499,7 @@ public class DualGameGUI extends JFrame {
             } else if (aiWon) {
                 msg.append("🤖 IA HA VINTO! Ti sei bloccato!");
             } else {
-                msg.append("🤷 Entrambi bloccati!");
+                msg.append(" Entrambi bloccati!");
             }
 
             JOptionPane.showMessageDialog(this,
@@ -412,18 +507,15 @@ public class DualGameGUI extends JFrame {
                     "Risultato Finale",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            // Opzione per rigiocare
             int choice = JOptionPane.showConfirmDialog(this,
                     "Vuoi fare una rivincita?",
                     "Nuova Partita",
                     JOptionPane.YES_NO_OPTION);
 
             if (choice == JOptionPane.YES_OPTION) {
-                // Reset e ricomincia
                 gameEnded = false;
                 playerTurn = true;
 
-                // Rimuovi le vecchie GUI
                 Component[] components = ((JPanel) getContentPane().getComponent(1)).getComponents();
                 JPanel leftPanel = (JPanel) components[0];
                 JPanel rightPanel = (JPanel) components[1];

@@ -88,33 +88,28 @@ public class GameStateSnapshot {
             Field counterField = TriPeaksGame.class.getDeclaredField("idCartaCounter");
             counterField.setAccessible(true);
 
-            // Ripristina layout
             List<Carta> layout = new ArrayList<>();
             for (CartaSnapshot cs : snapshot.layout) {
                 layout.add(cs.toCarta());
             }
             layoutField.set(game, layout);
 
-            // Ripristina mazzo
             List<Carta> mazzo = new ArrayList<>();
             for (CartaSnapshot cs : snapshot.mazzo) {
                 mazzo.add(cs.toCarta());
             }
             mazzoField.set(game, mazzo);
 
-            // Ripristina scarto
             if (snapshot.cartaScarto != null) {
                 scartoField.set(game, snapshot.cartaScarto.toCarta());
             }
 
-            // Ripristina posizioni
             List<Posizione> posizioni = new ArrayList<>();
             for (PosizioneSnapshot ps : snapshot.posizioni) {
                 posizioni.add(ps.toPosizione());
             }
             posizioniField.set(game, posizioni);
 
-            // Ripristina counter
             counterField.setInt(game, snapshot.idCartaCounter);
 
             return game;

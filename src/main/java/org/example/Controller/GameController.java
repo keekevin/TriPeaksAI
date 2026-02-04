@@ -38,9 +38,9 @@ public void giocaCarta(int idCarta) {
         System.out.println("=== PESCA CARTA ===");
         boolean pescata = game.pescaCarta();
         if (pescata) {
-            System.out.println("✓ Carta pescata con successo");
+            System.out.println(" Carta pescata con successo");
         } else {
-            System.err.println("✗ Impossibile pescare: mazzo vuoto");
+            System.err.println(" Impossibile pescare: mazzo vuoto");
         }
         view.updateDisplay(game);
     }
@@ -52,14 +52,14 @@ public void giocaCarta(int idCarta) {
             game = new TriPeaksGame(solverPath);
             game.inizia();
             view.updateDisplay(game);
-            System.out.println("✓ Partita inizializzata");
+            System.out.println(" Partita inizializzata");
             if (modalita == ModalitaGioco.IA) {
                 ia = new GameActionsIA(this, game);
                 turnoIAseNecessario(); // 👈 SOLO QUI
             }
 
         } catch (Exception e) {
-            System.err.println("✗ Errore nell'inizializzazione:");
+            System.err.println(" Errore nell'inizializzazione:");
             e.printStackTrace();
         }
     }

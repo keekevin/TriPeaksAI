@@ -10,7 +10,6 @@ public class DualGameController {
     private TriPeaksGame playerGame;
     private TriPeaksGame aiGame;
 
-
     private int playerMoves = 0;
     private int aiMoves = 0;
 
@@ -26,16 +25,13 @@ public class DualGameController {
         baseGame.inizia();
 
         initialState = GameStateSnapshot.cattura(baseGame);
-
-
         playerGame = GameStateSnapshot.ripristina(initialState, solverPath);
         aiGame = GameStateSnapshot.ripristina(initialState,solverPath);
 
         playerMoves = 0;
         aiMoves = 0;
 
-        System.out.println("✅ Partita dual inizializzata!");
-        System.out.println("   Seed (interno): " + System.identityHashCode(initialState));
+        System.out.println("✅ Partita duello inizializzata!");
     }
 
     public TriPeaksGame getPlayerGame() {

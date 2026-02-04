@@ -23,7 +23,7 @@ public class DualGamePlayerController implements GameActions{
         System.out.println("👤 === GIOCATORE GIOCA CARTA ID: " + idCarta + " ===");
 
         dualController.getPlayerGame().giocaCartaById(idCarta);
-        gui.onPlayerMove();  // Notifica la GUI
+        gui.onPlayerMove();
     }
 
     @Override
@@ -32,9 +32,6 @@ public class DualGamePlayerController implements GameActions{
             System.out.println("⚠️  Non è il tuo turno!");
             return;
         }
-
-        System.out.println("👤 === GIOCATORE PESCA CARTA ===");
-
         boolean pescata = dualController.getPlayerGame().pescaCarta();
 
         if(pescata) {

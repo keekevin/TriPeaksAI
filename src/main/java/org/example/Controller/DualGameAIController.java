@@ -34,13 +34,11 @@ public class DualGameAIController implements GameActions{
 
     @Override
     public void giocaCarta(int idCarta) {
-        System.out.println("🤖 === IA GIOCA CARTA ID: " + idCarta + " ===");
         dualController.getAiGame().giocaCartaById(idCarta);
     }
 
     @Override
     public void pescaCarta() {
-        System.out.println("🤖 === IA PESCA CARTA ===");
         dualController.getAiGame().pescaCarta();
     }
 

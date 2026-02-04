@@ -52,13 +52,11 @@ public class TriPeaksGUI extends JFrame {
         this.cardImages = new HashMap<>();
         this.scaleFactor = scale;
 
-        // ✅ PRIMA imposta le dimensioni scalate
         this.CARD_WIDTH = (int)(DEFAULT_CARD_WIDTH * scale);
         this.CARD_HEIGHT = (int)(DEFAULT_CARD_HEIGHT * scale);
         this.CARD_SPACING_X = (int)(DEFAULT_CARD_SPACING_X * scale);
         this.CARD_SPACING_Y = (int)(DEFAULT_CARD_SPACING_Y * scale);
 
-        // ✅ POI carica le immagini con le dimensioni corrette
         loadCardImages();
 
         setTitle("TriPeaks Solitaire");
@@ -114,7 +112,6 @@ public class TriPeaksGUI extends JFrame {
                 }
             }
         }
-        // Carica l'immagine del retro della carta
         try {
             BufferedImage backImg =
                     ImageIO.read(getClass().getResourceAsStream("/cards/retro.png"));
@@ -129,7 +126,6 @@ public class TriPeaksGUI extends JFrame {
         }
     }
 
-    // Crea un'immagine di default se il file non esiste
     private ImageIcon createDefaultCardImage(int valore, String seme) {
         BufferedImage img = new BufferedImage(CARD_WIDTH, CARD_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
@@ -139,12 +135,10 @@ public class TriPeaksGUI extends JFrame {
         g.setColor(Color.BLACK);
         g.drawRect(0, 0, CARD_WIDTH - 1, CARD_HEIGHT - 1);
 
-        // Disegna il valore
         g.setFont(new Font("Arial", Font.BOLD, 20));
         String valoreStr = valore == 1 ? "A" : valore == 11 ? "J" : valore == 12 ? "Q" : valore == 13 ? "K" : String.valueOf(valore);
         g.drawString(valoreStr, 10, 30);
 
-        // Disegna il simbolo del seme
         String simbolo = "";
         switch (seme) {
             case "cuori": simbolo = "♥"; g.setColor(Color.RED); break;
@@ -174,13 +168,10 @@ public class TriPeaksGUI extends JFrame {
 
 
 
-    // ✅ VERSIONE CON PARAMETRO (usata da dual mode)
     private void initComponents(boolean showControls) {
         setLayout(new BorderLayout(10, 10));
 
-        // ✨ MOSTRA CONTROLLI SOLO SE RICHIESTO
         if (showControls) {
-            // Panel superiore con punteggio e controlli
             controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
             controlPanel.setBackground(new Color(0, 100, 0));
 
@@ -211,7 +202,6 @@ public class TriPeaksGUI extends JFrame {
             add(controlPanel, BorderLayout.NORTH);
         }
 
-        // Panel centrale con il tableau (SEMPRE PRESENTE)
         tableauPanel = new JPanel(null){
             @Override
             protected void paintComponent(Graphics g) {
@@ -244,14 +234,12 @@ public class TriPeaksGUI extends JFrame {
         add(tableauPanel, BorderLayout.CENTER);
     }
 
-    // ✅ VERSIONE SENZA PARAMETRO (usata da modalità normale)
     private void initComponents() {
-        initComponents(true);  // ✅ DELEGA ALLA VERSIONE CON PARAMETRO
+        initComponents(true);
     }
     public void updateDisplay(TriPeaksGame game) {
 
         this.game = game;
-        // Rimuove solo le carte del tableau
         for (Component c : tableauPanel.getComponents()) {
             if (c instanceof CartaButton) {
                 tableauPanel.remove(c);
@@ -264,11 +252,9 @@ public class TriPeaksGUI extends JFrame {
         carteOrdinate.sort((c1, c2) -> {
             Posizione pos1 = game.getPosizioni().get(c1.getPosizione());
             Posizione pos2 = game.getPosizioni().get(c2.getPosizione());
-            // Ordina per riga decrescente (riga 3, poi 2, poi 1, poi 0)
             return Integer.compare(pos2.getRiga(), pos1.getRiga());
         });
 
-        // Ora crea i bottoni nell'ordine corretto
         for (Carta carta : carteOrdinate) {
             Posizione pos = game.getPosizioni().get(carta.getPosizione());
 
@@ -361,7 +347,6 @@ public class TriPeaksGUI extends JFrame {
     }
 
 
-    // Classe interna per rappresentare una carta come bottone
     private class CartaButton extends JButton {
         private Carta carta;
         private boolean coperta;
