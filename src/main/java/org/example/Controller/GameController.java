@@ -51,6 +51,7 @@ public void giocaCarta(int idCarta) {
         try {
             game = new TriPeaksGame(solverPath);
             game.inizia();
+            view.resetView();
             view.updateDisplay(game);
             System.out.println(" Partita inizializzata");
             if (modalita == ModalitaGioco.IA) {

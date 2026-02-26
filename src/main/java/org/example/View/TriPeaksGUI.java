@@ -6,11 +6,10 @@ import org.example.Model.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.List;
 
 
@@ -237,17 +236,88 @@ public class TriPeaksGUI extends JFrame {
     private void initComponents() {
         initComponents(true);
     }
-    public void updateDisplay(TriPeaksGame game) {
 
-        this.game = game;
+    public void resetView() {
         for (Component c : tableauPanel.getComponents()) {
             if (c instanceof CartaButton) {
                 tableauPanel.remove(c);
             }
         }
-
         cartaButtons.clear();
+    }
+    public void updateDisplay(TriPeaksGame game) {
+        this.game = game;
 
+        Set<Integer> idGiocabili = new HashSet<>();
+        for (MossaValida m : game.getMosseValide()) {
+            idGiocabili.add(m.getIdCarta());
+        }
+
+        if (!cartaButtons.isEmpty()) {
+            for (Carta carta : game.getLayout()) {
+                CartaButton btn = cartaButtons.get(carta.getId());
+                if (btn != null) {
+                    btn.aggiornaStato(
+                            game.getPosizioni().get(carta.getPosizione()).isCoperta(),
+                            idGiocabili.contains(carta.getId())
+                    );
+                }
+            }
+            Set<Integer> idNelLayout = new HashSet<>();
+            for (Carta c : game.getLayout()) idNelLayout.add(c.getId());
+
+            List<Integer> daRimuovere = new ArrayList<>();
+            for (Map.Entry<Integer, CartaButton> entry : cartaButtons.entrySet()) {
+                if (!idNelLayout.contains(entry.getKey())) {
+                    tableauPanel.remove(entry.getValue());
+                    daRimuovere.add(entry.getKey());
+                }
+            }
+            for (Integer id : daRimuovere) cartaButtons.remove(id);
+
+        } else {
+            creaTuttiBottoni(game, idGiocabili);
+        }
+
+        aggiornaLabel(game);
+
+        if (game.getCarteRimanentiMazzo() > 0) {
+            if (deckCardButton.getParent() == null) tableauPanel.add(deckCardButton);
+            deckCardButton.setEnabled(true);
+        } else {
+            if (deckCardButton.getParent() != null) tableauPanel.remove(deckCardButton);
+        }
+
+        Carta scarto = game.getCartaScartoObj();
+        if (scarto != null) {
+            String key = scarto.getValore() + "_" + scarto.getSeme();
+            wasteCardLabel.setIcon(cardImages.get(key));
+        }
+
+        tableauPanel.revalidate();
+        tableauPanel.repaint();
+
+        if (scoreLabel != null) {
+            if (game.haVinto()) {
+                JOptionPane.showMessageDialog(this,
+                        "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio(),
+                        "Vittoria!", JOptionPane.INFORMATION_MESSAGE);
+            } else if (game.haPerso()) {
+                JOptionPane.showMessageDialog(this,
+                        "😞 Game Over! Punteggio: " + game.getPunteggio(),
+                        "Sconfitta", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+
+    private void aggiornaLabel(TriPeaksGame game) {
+        if (scoreLabel != null) scoreLabel.setText("Punteggio: " + game.getPunteggio());
+        if (deckLabel != null)  deckLabel.setText("Mazzo: " + game.getCarteRimanentiMazzo());
+        if (wasteLabel != null) wasteLabel.setText("Scarto: " + game.getCartaScartoString());
+        if (drawButton != null) drawButton.setEnabled(game.getCarteRimanentiMazzo() > 0);
+    }
+
+    private void creaTuttiBottoni(TriPeaksGame game, Set<Integer> idGiocabili) {
         List<Carta> carteOrdinate = new ArrayList<>(game.getLayout());
         carteOrdinate.sort((c1, c2) -> {
             Posizione pos1 = game.getPosizioni().get(c1.getPosizione());
@@ -259,10 +329,9 @@ public class TriPeaksGUI extends JFrame {
             Posizione pos = game.getPosizioni().get(carta.getPosizione());
 
             int MAX_RIGA = 3;
-
-            int LAST_ROW_SHIFT = (int)(-200 * scaleFactor); // valore da rifinire (+/-)
+            int LAST_ROW_SHIFT = (int)(-200 * scaleFactor);
             int offsetX = (int)(100 * scaleFactor);
-            int offsetY = (int)(50*scaleFactor);
+            int offsetY = (int)(50 * scaleFactor);
 
             int x;
             int y = offsetY + pos.getRiga() * CARD_SPACING_Y;
@@ -276,74 +345,13 @@ public class TriPeaksGUI extends JFrame {
                 x = offsetX + pos.getColonna() * CARD_SPACING_X;
             }
 
+            boolean giocabile = idGiocabili.contains(carta.getId());
 
-
-
-            boolean giocabile = false;
-            List<MossaValida> mosseValide = game.getMosseValide();
-            for (MossaValida mossa : mosseValide) {
-                if (mossa.getIdCarta() == carta.getId()) {
-                    giocabile = true;
-                    break;
-                }
-            }
-
-            CartaButton btn = new CartaButton(carta, pos.isCoperta(), giocabile,controller);
+            CartaButton btn = new CartaButton(carta, pos.isCoperta(), giocabile, controller);
             btn.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
             tableauPanel.add(btn);
             cartaButtons.put(carta.getId(), btn);
-
         }
-        if(scoreLabel != null){
-            scoreLabel.setText("Punteggio: " + game.getPunteggio());
-        }
-
-        if(deckLabel != null){
-            deckLabel.setText("Mazzo: " + game.getCarteRimanentiMazzo());
-        }
-        if(wasteLabel != null){
-            wasteLabel.setText("Scarto: " + game.getCartaScartoString());
-        }
-
-        if(drawButton != null){
-            drawButton.setEnabled(game.getCarteRimanentiMazzo() > 0);
-        }
-
-
-        tableauPanel.revalidate();
-        tableauPanel.repaint();
-
-        if(scoreLabel != null){
-            if (game.haVinto()) {
-                JOptionPane.showMessageDialog(this,
-                        "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio(),
-                        "Vittoria!", JOptionPane.INFORMATION_MESSAGE);
-            } else if (game.haPerso()) {
-                JOptionPane.showMessageDialog(this,
-                        "😞 Game Over! Punteggio: " + game.getPunteggio(),
-                        "Sconfitta", JOptionPane.INFORMATION_MESSAGE);
-            }
-        }
-
-        if (game.getCarteRimanentiMazzo() > 0) {
-            if (deckCardButton.getParent() == null) {
-                tableauPanel.add(deckCardButton);
-            }
-            deckCardButton.setIcon(backImage);
-            deckCardButton.setEnabled(true);
-        } else {
-            tableauPanel.remove(deckCardButton);
-        }
-
-        Carta scarto = game.getCartaScartoObj();
-        if(scarto != null){
-            String key = scarto.getValore() + "_" + scarto.getSeme();
-            ImageIcon icon = cardImages.get(key);
-            wasteCardLabel.setIcon(icon);
-        }
-
-        tableauPanel.revalidate();
-        tableauPanel.repaint();
     }
 
 
@@ -367,7 +375,6 @@ public class TriPeaksGUI extends JFrame {
             if (coperta) {
                 setIcon(backImage);
                 setEnabled(true);
-                System.out.println("  → Carta coperta, bottone disabilitato");
             } else {
                 String key = carta.getValore() + "_" + carta.getSeme();
                 ImageIcon cardIcon = cardImages.get(key);
@@ -382,19 +389,13 @@ public class TriPeaksGUI extends JFrame {
                     setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
                     setBorderPainted(true);
                      addActionListener(e -> {
-                        System.out.println("\n🎯 CLICK RILEVATO su carta ID=" + carta.getId());
-                        System.out.println("   Controller: " + (controller != null ? "OK" : "NULL"));
 
                         if (controller != null) {
-                            System.out.println("   Chiamo controller.giocaCarta(" + carta.getId() + ")");
                             controller.giocaCarta(carta.getId());
                         } else {
-                            System.err.println("   ❌ CONTROLLER È NULL!");
                         }
                     });
-                    System.out.println("  → ActionListener aggiunto");
                 } else{
-                    System.out.println("  → Carta NON giocabile");
                 }
 
 
@@ -409,6 +410,42 @@ public class TriPeaksGUI extends JFrame {
 
         public boolean isGiocabile() {
             return giocabile;
+        }
+
+        public void aggiornaStato(boolean nuovaCoperta, boolean nuovaGiocabile) {
+            if (this.coperta == nuovaCoperta && this.giocabile == nuovaGiocabile) {
+                return;
+            }
+
+            this.coperta = nuovaCoperta;
+            this.giocabile = nuovaGiocabile;
+
+            if (nuovaCoperta) {
+                setIcon(backImage);
+                setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                removeActionListeners();
+            } else {
+                String key = carta.getValore() + "_" + carta.getSeme();
+                setIcon(cardImages.getOrDefault(key,
+                        createDefaultCardImage(carta.getValore(), carta.getSeme())));
+
+                if (nuovaGiocabile) {
+                    setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
+                    removeActionListeners();
+                    addActionListener(e -> controller.giocaCarta(carta.getId()));
+                    setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                } else {
+                    setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                    removeActionListeners();
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        }
+
+        private void removeActionListeners() {
+            for (ActionListener al : getActionListeners()) {
+                removeActionListener(al);
+            }
         }
     }
 }
