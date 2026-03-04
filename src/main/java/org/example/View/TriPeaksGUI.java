@@ -299,13 +299,19 @@ public class TriPeaksGUI extends JFrame {
 
         if (scoreLabel != null) {
             if (game.haVinto()) {
-                JOptionPane.showMessageDialog(this,
-                        "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio(),
-                        "Vittoria!", JOptionPane.INFORMATION_MESSAGE);
+                int scelta = JOptionPane.showConfirmDialog(this,
+                        "🎉 HAI VINTO! Punteggio finale: " + game.getPunteggio() + "\n\nVuoi giocare ancora?",
+                        "Vittoria!", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                if (scelta == JOptionPane.YES_OPTION) {
+                    controller.nuovaPartita();
+                }
             } else if (game.haPerso()) {
-                JOptionPane.showMessageDialog(this,
-                        "😞 Game Over! Punteggio: " + game.getPunteggio(),
-                        "Sconfitta", JOptionPane.INFORMATION_MESSAGE);
+                int scelta = JOptionPane.showConfirmDialog(this,
+                        "😞 Game Over! Punteggio: " + game.getPunteggio() + "\n\nVuoi riprovare?",
+                        "Sconfitta", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                if (scelta == JOptionPane.YES_OPTION) {
+                    controller.nuovaPartita();
+                }
             }
         }
     }
