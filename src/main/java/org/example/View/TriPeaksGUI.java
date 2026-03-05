@@ -304,6 +304,8 @@ public class TriPeaksGUI extends JFrame {
                         "Vittoria!", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                 if (scelta == JOptionPane.YES_OPTION) {
                     controller.nuovaPartita();
+                }else if (scelta == JOptionPane.NO_OPTION){
+                    System.exit(0);
                 }
             } else if (game.haPerso()) {
                 int scelta = JOptionPane.showConfirmDialog(this,
@@ -311,6 +313,8 @@ public class TriPeaksGUI extends JFrame {
                         "Sconfitta", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
                 if (scelta == JOptionPane.YES_OPTION) {
                     controller.nuovaPartita();
+                }else if (scelta == JOptionPane.NO_OPTION){
+                    System.exit(0);
                 }
             }
         }
