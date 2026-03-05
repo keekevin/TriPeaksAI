@@ -12,7 +12,6 @@ public class MainGUI {
 
     public static void main(String[] args) {
 
-        // 🔹 Selezione sistema operativo
         String os = System.getProperty("os.name").toLowerCase();
         String solverPath;
 
@@ -24,13 +23,11 @@ public class MainGUI {
             solverPath = "lib/dlv2";
         }
 
-        // 🔹 Avvio GUI su Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
 
-            // 1️⃣ Menu (modale)
             JFrame frame = new JFrame();
             MenuView menu = new MenuView(frame);
-            menu.setVisible(true);   // BLOCCA finché non scegli
+            menu.setVisible(true);
 
             ModalitaGioco modalita = menu.getScelta();
             frame.dispose();
@@ -39,13 +36,10 @@ public class MainGUI {
                 System.exit(0);
             }
 
-            // 2️⃣ Avvio gioco con modalità scelta
             if (modalita == ModalitaGioco.UMANO_VS_IA) {
-                // ✨ NUOVA MODALITÀ - Turni alternati
                 DualGameGUI dualGUI = new DualGameGUI(solverPath);
                 dualGUI.setVisible(true);
             } else {
-                // Modalità esistenti (UMANO o IA)
                 new GameController(solverPath, modalita);
             }
         });

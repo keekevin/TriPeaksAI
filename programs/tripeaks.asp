@@ -12,14 +12,19 @@ mossa_valida(ID, V) :-
     carta_scarto(VS),
     adiacente(V, VS).
 
+%esiste almeno una mossa valida in questo turno
 esiste_mossa :- mossa_valida(_, _).
 
+%se esistono mosse valide, ne sceglie esattamente una
 { azione_gioca(ID) : mossa_valida(ID, _) } = 1 :- esiste_mossa.
+
+%se non esistono mosse valide e il mazzo non è vuoto, pesca una carta
 azione_pesca :- not esiste_mossa, puo_pescare.
+
 % -------------------------------
 % Relazioni di copertura
 % -------------------------------
-% Pos1 copre Pos2 se Pos2 richiede che Pos1 sia libera
+%Pos2 è bloccata finché Pos1 non viene rimossa
 copre(Pos1, Pos2) :- richiede_libera(Pos2, Pos1).
 
 carta_copre(ID1, ID2) :-
@@ -44,8 +49,12 @@ scopre_carta(ID_mossa) :-
 % -------------------------------
 % Lookahead profondità 1
 % -------------------------------
+
+%se gioco ID_giovata il nuovo valore in cima allo scarto sarà V
 scarto_dopo(ID_giocata, V) :- mossa_valida(ID_giocata, V).
 
+
+%dopo aver giocato ID_giocata, esiste almeno un'altra carta già scoperta e giocabile nel turno successivo
 mossa_dopo(ID_giocata) :-
     scarto_dopo(ID_giocata, VScarto),
     carta_giocabile(ID2),
@@ -56,6 +65,8 @@ mossa_dopo(ID_giocata) :-
 % -------------------------------
 % Lookahead profondità 2
 % -------------------------------
+
+%ID2 è giocabile come seconda mossa dopo aver giocato ID1
 seconda_mossa(ID1, ID2) :-
     scarto_dopo(ID1, VScarto1),
     carta_giocabile(ID2),
@@ -63,73 +74,70 @@ seconda_mossa(ID1, ID2) :-
     carta(ID2, V2, _, _),
     adiacente(V2, VScarto1).
 
+%dopo la sequenza ID1 -> ID2, il nuovo valore in cima allo scarto sara V2
 scarto_dopo_2(ID1, ID2, V2) :-
     seconda_mossa(ID1, ID2),
     carta(ID2, V2, _, _).
 
+
+%ID3 è una carta gia scoperta sul tavolo e giocabile come terza mossa
 disponibile_dopo_2(ID1, ID2, ID3) :-
     seconda_mossa(ID1, ID2),
     carta_giocabile(ID3),
     ID3 != ID1,
     ID3 != ID2.
 
+
+%la sequenza è prolungabile se esiste un ID£ il cui valore è adiacente al nuovo scarto V2
 mossa_dopo_2(ID1, ID2) :-
     scarto_dopo_2(ID1, ID2, V2),
     disponibile_dopo_2(ID1, ID2, ID3),
     carta(ID3, V3, _, _),
     adiacente(V3, V2).
 
-ha_sequenza_2(ID1) :- mossa_dopo_2(ID1, _).
-
 % -------------------------------
 % Classificazione mosse
 % -------------------------------
+
+%garantisce almeno una mossa successiva
 mossa_sicura(ID) :-
     mossa_valida(ID, _),
     mossa_dopo(ID).
 
+
+%garantisce una sequenza di almeno 3 mosse
 mossa_sicura_2(ID) :-
     mossa_valida(ID, _),
-    ha_sequenza_2(ID).
+    mossa_dopo_2(ID, _).
 
+%esiste almeno una mossa sicura al livello 1
 esiste_mossa_sicura :- mossa_sicura(_).
+
+%esiste almeno una mossa sicura al livello 2
 esiste_sicura_2 :- mossa_sicura_2(_).
 
-% Flag: esiste almeno una mossa che scopre carte
+%esiste almeno una mossa che scopre carte
 esiste_mossa_che_scopre :- scopre_carta(_).
 
 % -------------------------------
 % Ottimizzazione multilivello
 % -------------------------------
 % PRIORITÀ @3 - Lookahead 2
+%penalizza le mosse che non garantiscono 3 mosse consecutive
 :~ azione_gioca(ID), not mossa_sicura_2(ID), esiste_sicura_2. [3@3, ID]
 
 % PRIORITÀ @2 - Scoprire carte
+%penalizza le mosse che non liberano le carte bloccate
 :~ azione_gioca(ID), not scopre_carta(ID), esiste_mossa_che_scopre. [2@2, ID]
 
 % PRIORITÀ @1 - Lookahead 1
+%penalizza le mosse che non garantiscono almeno una mossa successiva
 :~ azione_gioca(ID), not mossa_sicura(ID), esiste_mossa_sicura. [1@1, ID]
 
 % PRIORITÀ @0 - Tiebreaker valore
+%sceglie la mossa con il valore piu basso
 :~ azione_gioca(ID), carta(ID, V, _, _). [V@0, ID]
 
-% -------------------------------
-% DEBUG
-% -------------------------------
-%penalizzata_livello_2(ID) :-
-%    azione_gioca(ID),
-%    not mossa_sicura_2(ID),
-%    esiste_sicura_2.
-
-%penalizzata_livello_1(ID) :-
-%    azione_gioca(ID),
-%    not mossa_sicura(ID),
-%    esiste_mossa_sicura.
-
-%mossa_ottimale(ID) :-
-%    azione_gioca(ID),
-%    not penalizzata_livello_2(ID),
-%    not penalizzata_livello_1(ID).
 
 % -------------------------------
 % Output
