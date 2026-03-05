@@ -5,6 +5,8 @@ import org.example.Model.ModalitaGioco;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MenuView extends JDialog {
 
@@ -53,9 +55,9 @@ public class MenuView extends JDialog {
         JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 15, 15));
         buttonPanel.setOpaque(false);
 
-        umanoButton = createStyledButton("👤 Gioco Io", "Gioca tu contro il solitario", new Color(76, 175, 80));
-        iaButton = createStyledButton("🤖 Gioca l'IA", "Guarda l'IA risolvere il gioco", new Color(255, 152, 0));
-        umanoVsIaButton = createStyledButton("🤜🤛 Duello", "Sfida l'IA: chi vince per primo?", new Color(244, 67, 54));
+        umanoButton     = createStyledButton("👤 Gioco Io",    new Color(76, 175, 80));
+        iaButton        = createStyledButton("🤖 Gioca l'IA", new Color(255, 152, 0));
+        umanoVsIaButton = createStyledButton("🤜🤛 Duello",   new Color(244, 67, 54));
 
         umanoButton.addActionListener(e -> {
             scelta = ModalitaGioco.UMANO;
@@ -82,81 +84,78 @@ public class MenuView extends JDialog {
         setContentPane(mainPanel);
     }
 
-    private JButton createStyledButton(String text, String description, Color baseColor) {
-        JButton button = new JButton() {
-            private boolean hovered = false;
+    private static class HoverButton extends JButton {
+        private boolean hovered = false;
+        private final Color baseColor;
 
-            @Override
-            protected void paintComponent(Graphics graphics) {
-                Graphics2D g2d = (Graphics2D) graphics;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        public HoverButton(Color baseColor) {
+            this.baseColor = baseColor;
+            setOpaque(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+        }
 
-                Color bgColor;
-                if (getModel().isPressed()) {
-                    bgColor = baseColor.darker().darker();
-                } else if (hovered) {
+        public void setHovered(boolean h) {
+            this.hovered = h;
+            repaint();
+        }
 
-                    int r = Math.min(255, baseColor.getRed() + 30);
-                    int g = Math.min(255, baseColor.getGreen() + 30);
-                    int b = Math.min(255, baseColor.getBlue() + 30);
-                    bgColor = new Color(r, g, b);
-                } else {
-                    bgColor = baseColor;
-                }
+        @Override
+        protected void paintComponent(Graphics graphics) {
+            Graphics2D g2d = (Graphics2D) graphics.create();
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                g2d.setColor(bgColor);
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-
-                g2d.setColor(baseColor.darker().darker());
-                g2d.setStroke(new BasicStroke(2));
-                g2d.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 20, 20);
-
-                super.paintComponent(graphics);
+            Color bgColor;
+            if (getModel().isPressed()) {
+                bgColor = baseColor.darker().darker();
+            } else if (hovered) {
+                int r = Math.min(255, baseColor.getRed()   + 30);
+                int g = Math.min(255, baseColor.getGreen() + 30);
+                int b = Math.min(255, baseColor.getBlue()  + 30);
+                bgColor = new Color(r, g, b);
+            } else {
+                bgColor = baseColor;
             }
 
-            public void setHovered(boolean h) {
-                this.hovered = h;
-                repaint();
-            }
-        };
+            g2d.setColor(bgColor);
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+
+            g2d.setColor(baseColor.darker().darker());
+            g2d.setStroke(new BasicStroke(2));
+            g2d.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 20, 20);
+
+            g2d.dispose();
+
+            super.paintComponent(graphics);
+        }
+    }
+
+    private JButton createStyledButton(String text, Color baseColor) {
+        HoverButton button = new HoverButton(baseColor);
 
         button.setLayout(new BorderLayout(10, 8));
-        button.setBorder(new EmptyBorder(20, 25, 20, 25)); // Aumentato padding
+        button.setBorder(new EmptyBorder(20, 25, 20, 25));
         button.setOpaque(false);
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JLabel mainLabel = new JLabel(text);
-        mainLabel.setFont(new Font("Arial", Font.BOLD, 22));
-        mainLabel.setForeground(Color.WHITE);
-        mainLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setText(text);
+        button.setFont(new Font("Arial", Font.BOLD, 22));
+        button.setForeground(Color.WHITE);
+        button.setHorizontalAlignment(SwingConstants.CENTER);
 
-        JLabel descLabel = new JLabel(description);
-        descLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        descLabel.setForeground(new Color(255, 255, 255, 220));
-        descLabel.setHorizontalAlignment(SwingConstants.LEFT);
-
-        JPanel textPanel = new JPanel(new BorderLayout(5, 8));
-        textPanel.setOpaque(false);
-        textPanel.add(mainLabel, BorderLayout.NORTH);
-        textPanel.add(descLabel, BorderLayout.CENTER);
-
-        button.add(textPanel, BorderLayout.CENTER);
-
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                JButton btn = (JButton)evt.getSource();
-                try {
-                    btn.getClass().getMethod("setHovered", boolean.class).invoke(btn, true);
-                } catch (Exception ignored) {}
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setHovered(true);
             }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                JButton btn = (JButton)evt.getSource();
-                try {
-                    btn.getClass().getMethod("setHovered", boolean.class).invoke(btn, false);
-                } catch (Exception ignored) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setHovered(false);
             }
         });
 

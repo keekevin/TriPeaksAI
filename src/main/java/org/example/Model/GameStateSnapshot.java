@@ -12,7 +12,7 @@ public class GameStateSnapshot {
     private List<PosizioneSnapshot> posizioni;
     private int idCartaCounter;
 
-
+    //Esegue uno snapshot dello stato del gioco
     public static GameStateSnapshot cattura(TriPeaksGame game){
         try{
 
@@ -68,7 +68,7 @@ public class GameStateSnapshot {
         }
     }
 
-
+//crea un nuovo tripieaks e reinserisce tutti i dati salvati nello snapshot
     public static TriPeaksGame ripristina(GameStateSnapshot snapshot,String solverPath){
         try {
             TriPeaksGame game = new TriPeaksGame(solverPath);

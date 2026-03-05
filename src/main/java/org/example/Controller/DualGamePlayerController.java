@@ -35,7 +35,7 @@ public class DualGamePlayerController implements GameActions{
         boolean pescata = dualController.getPlayerGame().pescaCarta();
 
         if(pescata) {
-            System.out.println("✓ Carta pescata");
+            System.out.println(" Carta pescata");
         }
 
         gui.onPlayerMove();

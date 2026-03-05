@@ -250,123 +250,55 @@ public class TriPeaksGame {
     }
 
 
-    public List<MossaValida> getMosseValide(){
-        System.out.println("\n╔═══════════════════════════════════════╗");
-        System.out.println("║   INIZIO getMosseValide()             ║");
-        System.out.println("╚═══════════════════════════════════════╝");
-
+    public List<MossaValida> getMosseValide() {
         handler.removeAll();
         InputProgram program = new ASPInputProgram();
 
-        try{
-            System.out.println("📋 Carte nel layout: " + layout.size());
-            for(Carta carta: layout){
+        try {
+            for (Carta carta : layout) {
                 program.addObjectInput(carta);
-                System.out.println("  + Carta ID=" + carta.getId() +
-                        ", Valore=" + carta.getValore() +
-                        ", Pos=" + carta.getPosizione());
             }
 
-            System.out.println("\n📍 Posizioni:");
-            for(Posizione pos : posizioni){
+            for (Posizione pos : posizioni) {
                 program.addObjectInput(pos);
-                System.out.println("  + Pos ID=" + pos.getId() +
-                        ", Riga=" + pos.getRiga() +
-                        ", Col=" + pos.getColonna() +
-                        ", Coperta=" + pos.isCoperta());
             }
 
-            System.out.println("\n🎴 DEBUG CARTA SCARTO (JAVA):");
-
-            System.out.println("  Valore  = " + cartaScarto.getValore());
-
-
-            String scartoRule = "carta_scarto(" + cartaScarto.getValore() + ").";
-            System.out.println("  ASP --> " + scartoRule);
-
-            program.addProgram(scartoRule);
-
+            program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
 
             String aspFilePath = "programs/tripeaks.asp";
-            System.out.println("\n📄 Caricamento file ASP: " + aspFilePath);
 
             java.io.File aspFile = new java.io.File(aspFilePath);
-            if(aspFile.exists()){
-                System.out.println("  ✓ File trovato: " + aspFile.getAbsolutePath());
-            } else {
-                System.err.println("  ✗ FILE NON TROVATO: " + aspFile.getAbsolutePath());
-                System.err.println("  Directory corrente: " + new java.io.File(".").getAbsolutePath());
+            if (!aspFile.exists()) {
+                System.err.println("File ASP non trovato: " + aspFile.getAbsolutePath());
             }
 
             if (!mazzo.isEmpty()) {
                 program.addProgram("puo_pescare.");
             }
+
             program.addFilesPath(aspFilePath);
-
             handler.addProgram(program);
-
-            System.out.println("\n🔧 Esecuzione solver...");
-
-//            System.out.println("\n--- ATOMI INVIATI AL SOLVER ---");
-//            for (Carta carta : layout) {
-//                System.out.println("carta(" + carta.getId() + "," + carta.getValore() + "," +
-//                        "\"" + carta.getSeme() + "\"," + carta.getPosizione() + ").");
-//            }
-//
-//            for (Posizione pos : posizioni) {
-//                System.out.println("posizione(" + pos.getId() + "," + pos.getRiga() + "," +
-//                        pos.getColonna() + "," + pos.getCoperta() + ").");
-//            }
-//
-//            System.out.println("carta_scarto(" + cartaScarto.getValore() + ").");
-//            if (!mazzo.isEmpty()) System.out.println("puo_pescare.");
-//            System.out.println("--- FINE ATOMI ---\n");
-
-
 
             Output output = handler.startSync();
             AnswerSets answers = (AnswerSets) output;
 
-
-            for (int i = 0; i < answers.getAnswersets().size(); i++) {
-                AnswerSet as = answers.getAnswersets().get(i);
-                System.out.println("\n--- ANSWER SET #" + i + " ---");
-                System.out.println(as);
-                System.out.println("Atomi nell'answer set: " + as.getAtoms().size());
-
-                for(Object atom : as.getAtoms()){
-                    System.out.println("  • " + atom.getClass().getSimpleName() + ": " + atom);
-                }
-            }
-
             List<MossaValida> mosse = new ArrayList<>();
 
-            if(!answers.getAnswersets().isEmpty()){
+            if (!answers.getAnswersets().isEmpty()) {
                 AnswerSet answerSet = answers.getAnswersets().get(0);
-
-                for(Object obj : answerSet.getAtoms()){
-                    if(obj instanceof MossaValida){
-                        MossaValida mossa = (MossaValida) obj;
-                        mosse.add(mossa);
-                        System.out.println("  ✓ MossaValida trovata: " + mossa);
+                for (Object obj : answerSet.getAtoms()) {
+                    if (obj instanceof MossaValida) {
+                        mosse.add((MossaValida) obj);
                     }
                 }
-
             } else {
-                System.err.println("⚠️  NESSUN ANSWER SET RESTITUITO DAL SOLVER!");
+                System.err.println("⚠️ Nessun answer set restituito dal solver!");
             }
 
-            System.out.println("╔═══════════════════════════════════════╗");
-            System.out.println("║   FINE getMosseValide()               ║");
-            System.out.println("╚═══════════════════════════════════════╝\n");
-
             return mosse;
-        }
-        catch(Exception e){
-            System.err.println("\n❌ ERRORE nell'esecuzione del solver ASP!");
-            System.err.println("Messaggio: " + e.getMessage());
-            System.err.println("Tipo: " + e.getClass().getName());
-            e.printStackTrace();
+
+        } catch (Exception e) {
+            System.err.println("❌ Errore nell'esecuzione del solver ASP: " + e.getMessage());
             return new ArrayList<>();
         }
     }

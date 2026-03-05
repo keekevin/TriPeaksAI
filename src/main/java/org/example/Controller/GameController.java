@@ -56,7 +56,7 @@ public void giocaCarta(int idCarta) {
             System.out.println(" Partita inizializzata");
             if (modalita == ModalitaGioco.IA) {
                 ia = new GameActionsIA(this, game);
-                turnoIAseNecessario(); // 👈 SOLO QUI
+                turnoIAseNecessario();
             }
 
         } catch (Exception e) {
