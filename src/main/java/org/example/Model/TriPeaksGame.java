@@ -51,31 +51,23 @@ public class TriPeaksGame {
     private Map<Integer, List<Integer>> inizializzaCoperture() {
         Map<Integer, List<Integer>> map = new HashMap<>();
         map.put(0,Arrays.asList(1,2));
-
         map.put(3, Arrays.asList(6, 7));
         map.put(4, Arrays.asList(7, 8));
         map.put(5, Arrays.asList(8, 15));
         map.put(9,Arrays.asList(10,11));
         map.put(18, Arrays.asList(19,20));
-
-
         map.put(12, Arrays.asList(15, 16));
         map.put(13, Arrays.asList(16, 17));
         map.put(14, Arrays.asList(17, 24));
-
         map.put(21, Arrays.asList(24, 25));
         map.put(22, Arrays.asList(25, 26));
         map.put(23, Arrays.asList(26, 27));
-
         map.put(1, Arrays.asList(3, 4));
         map.put(2, Arrays.asList(4, 5));
-
         map.put(10, Arrays.asList(12, 13));
         map.put(11, Arrays.asList(13, 14));
-
         map.put(19, Arrays.asList(21, 22));
         map.put(20, Arrays.asList(22, 23));
-
         return map;
     }
 
@@ -161,146 +153,84 @@ public class TriPeaksGame {
         }
     }
 
-    public Object decidiAzioneASP() {
-        try {
-            handler.removeAll();
-            InputProgram program = new ASPInputProgram();
+    private AnswerSet eseguiASP() throws Exception {
+        handler.removeAll();
+        InputProgram program = new ASPInputProgram();
 
-            for (Carta carta : layout) {
-                program.addObjectInput(carta);
+        for (Carta carta : layout) {
+            program.addObjectInput(carta);
+        }
+
+        for (Posizione pos : posizioni) {
+            program.addObjectInput(pos);
+        }
+
+        // Aggiunge le relazioni di copertura dalla mappa già esistente
+        for (Map.Entry<Integer, List<Integer>> entry : coperture.entrySet()) {
+            for (Integer posLibera : entry.getValue()) {
+                program.addProgram(String.format("richiede_libera(%d,%d).%n", entry.getKey(), posLibera));
             }
+        }
 
-            for (Posizione pos : posizioni) {
-                program.addObjectInput(pos);
-            }
+        program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
 
-            Map<Integer, List<Integer>> map = new HashMap<>();
-            map.put(0, Arrays.asList(1, 2));
-            map.put(3, Arrays.asList(6, 7));
-            map.put(4, Arrays.asList(7, 8));
-            map.put(5, Arrays.asList(8, 15));
-            map.put(9, Arrays.asList(10, 11));
-            map.put(18, Arrays.asList(19, 20));
-            map.put(12, Arrays.asList(15, 16));
-            map.put(13, Arrays.asList(16, 17));
-            map.put(14, Arrays.asList(17, 24));
-            map.put(21, Arrays.asList(24, 25));
-            map.put(22, Arrays.asList(25, 26));
-            map.put(23, Arrays.asList(26, 27));
-            map.put(1, Arrays.asList(3, 4));
-            map.put(2, Arrays.asList(4, 5));
-            map.put(10, Arrays.asList(12, 13));
-            map.put(11, Arrays.asList(13, 14));
-            map.put(19, Arrays.asList(21, 22));
-            map.put(20, Arrays.asList(22, 23));
+        if (!mazzo.isEmpty()) {
+            program.addProgram("puo_pescare.");
+        }
 
-            for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
-                Integer posCoperta = entry.getKey();
-                for (Integer posLibera : entry.getValue()) {
-                    program.addProgram(String.format("richiede_libera(%d,%d).%n", posCoperta, posLibera));
-                }
-            }
+        String aspFilePath = "programs/tripeaks.asp";
+        if (!new java.io.File(aspFilePath).exists()) {
+            System.err.println("File ASP non trovato: " + new java.io.File(aspFilePath).getAbsolutePath());
+        }
 
+        program.addFilesPath(aspFilePath);
+        handler.addProgram(program);
 
+        Output output = handler.startSync();
+        AnswerSets answers = (AnswerSets) output;
 
-            program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
-
-            if (!mazzo.isEmpty()) {
-                program.addProgram("puo_pescare.");
-                System.out.println("  ✓ Può pescare (mazzo: " + mazzo.size() + " carte)");
-            } else {
-                System.out.println("  ✗ Non può pescare (mazzo vuoto)");
-            }
-
-            program.addFilesPath("programs/tripeaks.asp");
-
-            handler.addProgram(program);
-
-            Output output = handler.startSync();
-            AnswerSets answers = (AnswerSets) output;
-
-            if (answers.getAnswersets().isEmpty()) {
-                System.err.println("⚠️ NESSUN ANSWER SET! Partita probabilmente persa.");
-                return null;
-            }
-            AnswerSet as = answers.getAnswersets().get(0);
-
-            System.out.println("📦 Answer set ricevuto con " + as.getAtoms().size() + " atomi");
-
-            for (Object atom : as.getAtoms()) {
-                System.out.println("  • " + atom.getClass().getSimpleName() + ": " + atom);
-
-                if (atom instanceof AzioneGioca) {
-                    AzioneGioca azione = (AzioneGioca) atom;
-                    System.out.println("✅ DECISIONE: Gioca carta ID=" + azione.getIdCarta());
-                    return atom;
-                }
-                if (atom instanceof AzionePesca) {
-                    System.out.println("✅ DECISIONE: Pesca dal mazzo");
-                    return atom;
-                }
-            }
-            System.err.println("⚠️ Nessuna azione trovata nell'answer set!");
-
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (answers.getAnswersets().isEmpty()) {
+            System.err.println("⚠️ Nessun answer set restituito dal solver!");
             return null;
         }
+
+        return answers.getAnswersets().get(0);
+    }
+
+    public Object decidiAzioneASP() {
+       try {
+           AnswerSet as = eseguiASP();
+           if (as == null) return null;
+
+           for(Object atom : as.getAtoms()){
+               if(atom instanceof AzioneGioca)return atom;
+               if(atom instanceof AzionePesca)return atom;
+           }
+           System.err.println("⚠️ Nessuna azione trovata nell'answer set!");
+           return null;
+       } catch (Exception e) {
+           System.err.println("❌ Errore in decidiAzioneASP: " + e.getMessage());
+           return null;
+       }
     }
 
 
     public List<MossaValida> getMosseValide() {
-        handler.removeAll();
-        InputProgram program = new ASPInputProgram();
+       try{
+           AnswerSet as = eseguiASP();
+           List<MossaValida> mosse = new ArrayList<>();
+           if(as == null) return mosse;
 
-        try {
-            for (Carta carta : layout) {
-                program.addObjectInput(carta);
-            }
-
-            for (Posizione pos : posizioni) {
-                program.addObjectInput(pos);
-            }
-
-            program.addProgram("carta_scarto(" + cartaScarto.getValore() + ").");
-
-            String aspFilePath = "programs/tripeaks.asp";
-
-            java.io.File aspFile = new java.io.File(aspFilePath);
-            if (!aspFile.exists()) {
-                System.err.println("File ASP non trovato: " + aspFile.getAbsolutePath());
-            }
-
-            if (!mazzo.isEmpty()) {
-                program.addProgram("puo_pescare.");
-            }
-
-            program.addFilesPath(aspFilePath);
-            handler.addProgram(program);
-
-            Output output = handler.startSync();
-            AnswerSets answers = (AnswerSets) output;
-
-            List<MossaValida> mosse = new ArrayList<>();
-
-            if (!answers.getAnswersets().isEmpty()) {
-                AnswerSet answerSet = answers.getAnswersets().get(0);
-                for (Object obj : answerSet.getAtoms()) {
-                    if (obj instanceof MossaValida) {
-                        mosse.add((MossaValida) obj);
-                    }
-                }
-            } else {
-                System.err.println("⚠️ Nessun answer set restituito dal solver!");
-            }
-
-            return mosse;
-
-        } catch (Exception e) {
-            System.err.println("❌ Errore nell'esecuzione del solver ASP: " + e.getMessage());
-            return new ArrayList<>();
-        }
+           for(Object obj : as.getAtoms()){
+               if(obj instanceof MossaValida){
+                   mosse.add((MossaValida) obj);
+               }
+           }
+           return mosse;
+       } catch (Exception e) {
+           System.err.println("❌ Errore in getMosseValide: " + e.getMessage());
+           return new ArrayList<>();
+       }
     }
 
 
@@ -428,11 +358,7 @@ public class TriPeaksGame {
     }
 
     public boolean isPersa() {
-        return getMosseValide().isEmpty() && mazzoVuoto();
-    }
-
-    public boolean mazzoVuoto() {
-        return mazzo.isEmpty();
+        return haPerso();
     }
 
     public boolean isFinita() {

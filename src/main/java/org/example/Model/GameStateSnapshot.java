@@ -12,7 +12,7 @@ public class GameStateSnapshot {
     private List<PosizioneSnapshot> posizioni;
     private int idCartaCounter;
 
-    //Esegue uno snapshot dello stato del gioco
+    //Esegue uno snapshot dello stato del gioco attraverso la reflection
     public static GameStateSnapshot cattura(TriPeaksGame game){
         try{
 
